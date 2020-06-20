@@ -90,9 +90,9 @@ If using IBM Kubernetes FREE cluster
     EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     echo EXTERNAL_IP=$EXTERNAL_IP
     ```
-2. Set the environment variable `KNATIVE_DOMAIN` as the DNS domain using `xip.io`
+2. Set the environment variable `KNATIVE_DOMAIN` as the DNS domain using `nip.io`
     ```sh
-    KNATIVE_DOMAIN="$EXTERNAL_IP.xip.io"
+    KNATIVE_DOMAIN="$EXTERNAL_IP.nip.io"
     echo KNATIVE_DOMAIN=$KNATIVE_DOMAIN
     ```
 1. Configure DNS for Knative Serving
