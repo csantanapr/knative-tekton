@@ -90,9 +90,9 @@ If using IBM Kubernetes FREE cluster
     EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     echo EXTERNAL_IP=$EXTERNAL_IP
     ```
-2. Set the environment variable `KNATIVE_DOMAIN` as the DNS domain using `nip.io`
+2. Set the environment variable `KNATIVE_DOMAIN` as the DNS domain using `xip.io`
     ```sh
-    KNATIVE_DOMAIN="$EXTERNAL_IP.nip.io"
+    KNATIVE_DOMAIN="$EXTERNAL_IP.xip.io"
     echo KNATIVE_DOMAIN=$KNATIVE_DOMAIN
     ```
 1. Configure DNS for Knative Serving
@@ -361,22 +361,6 @@ If using IBM Kubernetes FREE cluster
     kubectl apply -f ./knative/v1v2v3.yaml
     ```
 1. Delete the Application and all it's revisions
-    ```yaml
-    apiVersion: serving.knative.dev/v1
-    kind: Service
-    metadata:
-      name: hello
-    spec:
-      template:
-        metadata:
-          name: hello-v1
-        spec:
-          containers:
-            - env:
-                - name: TARGET
-                  value: World from v1
-              image: gcr.io/knative-samples/helloworld-go
-    ```
     ```sh
     kn service delete hello
     ```
