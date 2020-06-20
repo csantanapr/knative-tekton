@@ -150,6 +150,10 @@ If using IBM Kubernetes FREE cluster
     ```sh
     kn service create hello --image gcr.io/knative-samples/helloworld-go
     ```
+1. You can see list your service
+    ```sh
+    kn service list hello
+    ```
 1. Use curl to invoke the Application
     ```sh
     curl hello.$SUB_DOMAIN
@@ -287,7 +291,7 @@ If using IBM Kubernetes FREE cluster
     Hello Knative from v2!
     Hello OSS NA 2020 from v3!
     ```
-1. Now that you have your service configure and deploy, you want to reproduce this using a kubernetes manifest using YAML in a different namespace or cluster. You can define your Knative service usign the following YAML
+1. Now that you have your service configure and deploy, you want to reproduce this using a kubernetes manifest using YAML in a different namespace or cluster. You can define your Knative service using the following YAML you can use the command `kn service export`
     <details><summary>Show me the YAML</summary>
 
         ```yaml
@@ -349,8 +353,16 @@ If using IBM Kubernetes FREE cluster
               percent: 100
               tag: v3
         ```
+        If you want to deploy the applicatio you can delete it and apply the YAML
+        ```sh
+        kn delete service hello
+        kn 
+        ```
 
     </details>
-
+1. Delete the Application and all it's revisions
+    ```sh
+    kn service delete hello
+    ```
 
 </details>
