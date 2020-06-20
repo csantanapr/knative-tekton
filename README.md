@@ -1,4 +1,4 @@
-# Open Source Summit 2020 - Knative + Tekton Tutorial
+# Open Source Summit NA 2020 - Knative + Tekton Tutorial
 
 <details><summary>Setup</summary>
 
@@ -44,7 +44,7 @@ If using IBM Kubernetes FREE cluster
 
 ### Setup Git
 
-1. Fork this repository
+1. Fork this repository https://github.com/csantanapr/knative-tekton
 1. Set the environment variable `GITHUB_REPO_URL` to the url of your fork, not mine.
     ```sh
     GITHUB_REPO_URL=`https://github.com/REPLACEME/knative-tekton`
@@ -336,14 +336,14 @@ If using IBM Kubernetes FREE cluster
               image: gcr.io/knative-samples/helloworld-go
       traffic:
         - latestRevision: true
-          percent: 100
+          percent: 0
           tag: v3
         - latestRevision: false
-          percent: 0
+          percent: 25
           revisionName: hello-tgzmt-1
           tag: v1
         - latestRevision: false
-          percent: 0
+          percent: 75
           revisionName: hello-mshgs-2
           tag: v2
     ```
