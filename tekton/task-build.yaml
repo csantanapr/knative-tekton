@@ -4,6 +4,16 @@ metadata:
   name: build
 spec:
   params:
+    - name: repo-url
+      description: The git repository url
+    - name: revision
+      description: The branch, tag, or git reference from the git repo-url location
+      default: master
+    - name: image
+      description: "The location where to push the image in the form of <server>/<namespace>/<repository>:<tag>"
+    - name: CONTEXT
+      description: Path to the directory to use as context.
+      default: .
     - name: BUILDER_IMAGE
       description: The location of the buildah builder image.
       default: quay.io/buildah/stable:v1.14.8
@@ -13,19 +23,13 @@ spec:
     - name: DOCKERFILE
       description: Path to the Dockerfile to build.
       default: ./Dockerfile
-    - name: CONTEXT
-      description: Path to the directory to use as context.
-      default: .
     - name: TLSVERIFY
       description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
       default: "false"
     - name: FORMAT
       description: The format of the built container, oci or docker
       default: "oci"
-    - name: image
-    - name: repo-url
-    - name: revision
-      default: master
+
   steps:
     - name: git-clone
       image: alpine/git

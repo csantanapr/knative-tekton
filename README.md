@@ -411,13 +411,15 @@ If using IBM Kubernetes FREE cluster
         console.log(`App listening on ${port}`);
     });
     ```
-1. We need to package our application in a Container Image and store this Image in a Container Registry. Since we are going to need to create secrets with the registry credentials we are going to create a ServiceAccount `pipelines` with the associated secret `regcred`. Make sure you setup your container credentials as environment variables. Checkout the [Setup Container Registry](#setup-container-registry) in the Setup Environment section on this tutorial.
+1. We need to package our application in a Container Image and store this Image in a Container Registry. Since we are going to need to create secrets with the registry credentials we are going to create a ServiceAccount `pipelines` with the associated secret `regcred`. Make sure you setup your container credentials as environment variables. Checkout the [Setup Container Registry](#setup-container-registry) in the Setup Environment section on this tutorial. This commands will print your credentials make sure no one is looking over, the printed command is what you need to run.
     ```sh
-    kubectl create secret docker-registry regcred \
-      --docker-server=\"${REGISTRY_SERVER}\" \
-      --docker-username=\"${REGISTRY_NAMESPACE}\" \
-      --docker-password=\"${REGISTRY_PASSWORD}\"
+    echo kubectl create secret docker-registry regcred \
+      --docker-server=\'${REGISTRY_SERVER}\' \
+      --docker-username=\'${REGISTRY_NAMESPACE}\' \
+      --docker-password=\'${REGISTRY_PASSWORD}\'
+    echo "Run the previous command manually ^ this avoids problems with charaters in the shell"
     ```
+    NOTE: If you password have some characters that are interpreted by the shell, then do NOT use environment variables, explicit enter your values in the command wrapped by single quotes `'`
 1. Create a ServiceAccount `pipeline` that contains the secret `regsecret` that we just created
     ```yaml
     apiVersion: v1
@@ -435,12 +437,20 @@ If using IBM Kubernetes FREE cluster
     ```sh
     kubectl apply -f tekton/task-build.yaml
     ```
+1. You can list the task that we just created using the `tkn` CLI
+    ```sh
+    tkn task ls
+    ```
+1. We can also get more details about the _build_ **Task** using `tkn describe`
+    ```
+    tkn task describe build
+    ```
 1. Let's use the Tekton CLI to test our _build_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application in our case is `nodejs`. The repository image name is `knative-tekton`
-  ```sh
-  tkn task start build --showlog \
-    -p repo-url=https://github.com/csantanapr/knative-tekton \
-    -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
-    -p CONTEXT=nodejs
-    -s pipeline 
-  ```
+    ```sh
+    tkn task start build --showlog \
+      -p repo-url=https://github.com/csantanapr/knative-tekton \
+      -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
+      -p CONTEXT=nodejs \
+      -s pipeline 
+    ```
 
