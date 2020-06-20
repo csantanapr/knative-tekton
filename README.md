@@ -404,13 +404,14 @@ If using IBM Kubernetes FREE cluster
 
 1. In this repository we have a sample application, you can see the source code in [src/app.js](./src//app.js) This application is using JavaScript to implement a web server, but you can use any language you want.
     ```javascript
-    const app = require("express")();
-    const server = require("http").createServer(app);
-    const port = process.env.PORT || "8080";
+    const app = require("express")()
+    const server = require("http").createServer(app)
+    const port = process.env.PORT || "8080"
+    const message = process.env.MESSAGE || 'Hello World'
 
-    app.get('/', (req, res) => res.send('Hello World'));
+    app.get('/', (req, res) => res.send(message))
     server.listen(port, function () {
-        console.log(`App listening on ${port}`);
+        console.log(`App listening on ${port}`)
     });
     ```
 1. We need to package our application in a Container Image and store this Image in a Container Registry. Since we are going to need to create secrets with the registry credentials we are going to create a ServiceAccount `pipelines` with the associated secret `regcred`. Make sure you setup your container credentials as environment variables. Checkout the [Setup Container Registry](#setup-container-registry) in the Setup Environment section on this tutorial. This commands will print your credentials make sure no one is looking over, the printed command is what you need to run.
@@ -473,6 +474,22 @@ If using IBM Kubernetes FREE cluster
     ```sh
     kubectl apply -f tekton/task-deploy.yaml
     ```
+1. I provided a YAML that defines our Knative Application in [knative/service.yaml](./knative/service.yaml)
+    ```yaml
+    apiVersion: serving.knative.dev/v1
+    kind: Service
+    metadata:
+      name: demo
+    spec:
+      template:
+        spec:
+          containers:
+            - image: docker.io/csantanapr/knative-tekton
+              imagePullPolicy: Always
+              env:
+                - name: MESSAGE
+                  value: Welcome to OSS NA 2020 !
+    ```
 1. Let's use the Tekton CLU to test our _deploy_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application yaml manifest is located and the file name in our case is `knative` and `service.yaml` .
     ```sh
     tkn task start deploy --showlog \
@@ -481,3 +498,16 @@ If using IBM Kubernetes FREE cluster
       -p yaml=service.yaml \
       -s pipeline 
     ```
+1. You can check out that the Knative Application was deploy
+    ```sh
+    kn service list demo
+    ```
+1. Run the Application using the url
+    ```sh
+    curl http://demo.$SUB_DOMAIN
+    ```
+    It shoudl print
+    ```
+    Welcome to OSS NA 2020  🎉 🌮 🔥 🤗!
+    ```
+

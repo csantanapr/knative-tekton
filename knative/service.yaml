@@ -1,4 +1,3 @@
----
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -8,6 +7,7 @@ spec:
     spec:
       containers:
         - image: docker.io/csantanapr/knative-tekton
+          imagePullPolicy: Always
           env:
             - name: MESSAGE
-              value: Welcome to OSS NA 2020 !
+              value: Welcome to OSS NA 2020  🎉 🌮 🔥 🤗!
