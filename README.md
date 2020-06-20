@@ -293,8 +293,8 @@ If using IBM Kubernetes FREE cluster
     ```
 1. Now that you have your service configure and deploy, you want to reproduce this using a kubernetes manifest using YAML in a different namespace or cluster. You can define your Knative service using the following YAML you can use the command `kn service export`
     <details><summary>Show me the YAML</summary>
-    
-    ```
+
+    ```yaml
     ---
     apiVersion: serving.knative.dev/v1
     kind: Service
