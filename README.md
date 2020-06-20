@@ -1,8 +1,8 @@
 # Open Source Summit NA 2020 - Knative + Tekton Tutorial
 
-<details><summary>Setup</summary>
+<details><summary>Setup Environment</summary>
 
-## Setup
+## Setup Environment
 
 ### Tools
 - Kubernetes Cluster
@@ -137,7 +137,7 @@ If using IBM Kubernetes FREE cluster
 
 </details>
 
-<details><summary>Deploy Applications</summary>
+<details><summary>Deploy Knative Applications</summary>
 
 ## Deploy Knative Applications
 
