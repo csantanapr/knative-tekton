@@ -10,8 +10,8 @@
     - You can use other kubernetes cluster like minikube or kind
 - [Kubernetes CLI]() `kubectl`
 - [Knative CLI](https://knative.dev/docs/install/install-kn/) `kn`
-- [Tekton CLI]() `tkn`
-- [Hey CLI]() `hey`
+- [Tekton CLI](https://github.com/tektoncd/cli#installing-tkn) `tkn`
+- [Hey CLI](https://github.com/rakyll/hey#installation) `hey`
 - [YAML Editor](https://github.com/redhat-developer/vscode-yaml)
 
 ### Accounts
@@ -75,13 +75,13 @@ If using IBM Kubernetes FREE cluster
 
 ## Install Knative
 
-1. Install Knative Serving
+1. Install Knative Serving in namespace `knative-serving`
     ```sh
     kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml
 
     kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-core.yaml
     ```
-1. Install Knative Layer kourier
+1. Install Knative Layer kourier in namespace `kourier-system`
     ```
     kubectl apply --filename https://github.com/knative/net-kourier/releases/download/v0.15.0/kourier.yaml
     ```
@@ -366,3 +366,31 @@ If using IBM Kubernetes FREE cluster
     ```
 
 </details>
+
+<details><summary>4. Install Tekton</summary>
+
+## Install Tekton
+
+1. Install Tekton Pipelines in namespace `tekton-pipelines`
+    ```sh
+    kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.13.2/release.yaml
+    ```
+
+1. Install Tekton Dashboard in namespace `tekton-pipelines` (Optional)
+    ```sh
+    kubectl apply --filename https://github.com/tektoncd/dashboard/releases/download/v0.7.0/tekton-dashboard-release.yaml
+    ```
+    To access the dashboard you can configure a service with `NodePort`
+    ```sh
+    kubectl expose service tekton-dashboard --name tekton-dashboard-ingress --type=NodePort -n tekton-pipelines
+    ```
+    Set an environment variable `TEKTON_DASHBOARD_URL` with the url to access the Dashboard
+    ```sh
+    EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    TEKTON_DASHBOARD_NODEPORT=$(kubectl get svc tekton-dashboard-ingress -n tekton-pipelines -o jsonpath='{.spec.ports[0].nodePort}')
+    TEKTON_DASHBOARD_URL=http://$EXTERNAL_IP:$TEKTON_DASHBOARD_NODEPORT
+    echo TEKTON_DASHBOARD_URL=$TEKTON_DASHBOARD_URL
+    ```
+
+</details>
+
