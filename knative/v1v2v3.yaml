@@ -44,14 +44,14 @@ spec:
               value: OSS NA 2020 from v3
           image: gcr.io/knative-samples/helloworld-go
   traffic:
-    - latestRevision: true
-      percent: 100
-      tag: v3
-    - latestRevision: false
-      percent: 0
-      revisionName: hello-mshgs-2
-      tag: v2
     - latestRevision: false
       percent: 0
       revisionName: hello-tgzmt-1
       tag: v1
+    - latestRevision: false
+      percent: 0
+      revisionName: hello-mshgs-2
+      tag: v2
+    - latestRevision: true
+      percent: 100
+      tag: v3
