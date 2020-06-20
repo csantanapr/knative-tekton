@@ -294,73 +294,90 @@ If using IBM Kubernetes FREE cluster
 1. Now that you have your service configure and deploy, you want to reproduce this using a kubernetes manifest using YAML in a different namespace or cluster. You can define your Knative service using the following YAML you can use the command `kn service export`
     <details><summary>Show me the YAML</summary>
 
-        ```
-        ---
-        apiVersion: serving.knative.dev/v1
-        kind: Service
-        metadata:
-          name: hello
-        spec:
-          template:
-            metadata:
-              name: hello-v1
-            spec:
-              containers:
-                - env:
-                    - name: TARGET
-                      value: World from v1
-                  image: gcr.io/knative-samples/helloworld-go
-        ---
-        apiVersion: serving.knative.dev/v1
-        kind: Service
-        metadata:
-          name: hello
-        spec:
-          template:
-            metadata:
-              name: hello-v2
-            spec:
-              containers:
-                - env:
-                    - name: TARGET
-                      value: Knative from v2
-                  image: gcr.io/knative-samples/helloworld-go
-        ---
-        apiVersion: serving.knative.dev/v1
-        kind: Service
-        metadata:
-          name: hello
-        spec:
-          template:
-            metadata:
-              name: hello-v3
-            spec:
-              containers:
-                - env:
-                    - name: TARGET
-                      value: OSS NA 2020 from v3
-                  image: gcr.io/knative-samples/helloworld-go
-          traffic:
-            - latestRevision: false
-              percent: 0
-              revisionName: hello-v1
-              tag: v1
-            - latestRevision: false
-              percent: 0
-              revisionName: hello-v2
-              tag: v2
-            - latestRevision: true
-              percent: 100
-              tag: v3
-        ```
+  <pre><code>
+  ---
+  apiVersion: serving.knative.dev/v1
+  kind: Service
+  metadata:
+    name: hello
+  spec:
+    template:
+      metadata:
+        name: hello-v1
+      spec:
+        containers:
+          - env:
+              - name: TARGET
+                value: World from v1
+            image: gcr.io/knative-samples/helloworld-go
+  ---
+  apiVersion: serving.knative.dev/v1
+  kind: Service
+  metadata:
+    name: hello
+  spec:
+    template:
+      metadata:
+        name: hello-v2
+      spec:
+        containers:
+          - env:
+              - name: TARGET
+                value: Knative from v2
+            image: gcr.io/knative-samples/helloworld-go
+  ---
+  apiVersion: serving.knative.dev/v1
+  kind: Service
+  metadata:
+    name: hello
+  spec:
+    template:
+      metadata:
+        name: hello-v3
+      spec:
+        containers:
+          - env:
+              - name: TARGET
+                value: OSS NA 2020 from v3
+            image: gcr.io/knative-samples/helloworld-go
+    traffic:
+      - latestRevision: false
+        percent: 0
+        revisionName: hello-v1
+        tag: v1
+      - latestRevision: false
+        percent: 0
+        revisionName: hello-v2
+        tag: v2
+      - latestRevision: true
+        percent: 100
+        tag: v3
+  </code></pre>
 
     </details>
-    If you want to deploy the applicatio you can delete it and apply the YAML
+
+    If you want to deploy usign YAML, delete the Application with `kn` and redeploy with `kubectl`
     ```sh
     kn delete service hello
     kubectl apply -f ./knative/v1v2v3.yaml
     ```
 1. Delete the Application and all it's revisions
+    ```yaml
+    apiVersion: serving.knative.dev/v1
+    kind: Service
+    metadata:
+      name: hello
+    spec:
+      template:
+        metadata:
+          name: hello-v1
+        spec:
+          containers:
+            - env:
+                - name: TARGET
+                  value: World from v1
+              image: gcr.io/knative-samples/helloworld-go
+    ```
     ```sh
     kn service delete hello
     ```
