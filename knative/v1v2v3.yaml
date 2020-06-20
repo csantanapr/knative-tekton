@@ -6,7 +6,7 @@ metadata:
 spec:
   template:
     metadata:
-      name: hello-tgzmt-1
+      name: hello-v1
     spec:
       containers:
         - env:
@@ -21,7 +21,7 @@ metadata:
 spec:
   template:
     metadata:
-      name: hello-mshgs-2
+      name: hello-v2
     spec:
       containers:
         - env:
@@ -36,7 +36,7 @@ metadata:
 spec:
   template:
     metadata:
-      name: hello-pxgxx-3
+      name: hello-v3
     spec:
       containers:
         - env:
@@ -46,11 +46,11 @@ spec:
   traffic:
     - latestRevision: false
       percent: 0
-      revisionName: hello-tgzmt-1
+      revisionName: hello-v1
       tag: v1
     - latestRevision: false
       percent: 0
-      revisionName: hello-mshgs-2
+      revisionName: hello-v2
       tag: v2
     - latestRevision: true
       percent: 100

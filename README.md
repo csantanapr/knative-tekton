@@ -275,7 +275,7 @@ If using IBM Kubernetes FREE cluster
     Hello OSS NA 2020 from v3!
     Hello OSS NA 2020 from v3!
     ```
-2. By using tags the custom urls with tag prefix are still available, in case you want to access an old revision of the application
+1. By using tags the custom urls with tag prefix are still available, in case you want to access an old revision of the application
     ```sh
     curl v1-hello.$SUB_DOMAIN 
     curl v2-hello.$SUB_DOMAIN 
@@ -287,65 +287,70 @@ If using IBM Kubernetes FREE cluster
     Hello Knative from v2!
     Hello OSS NA 2020 from v3!
     ```
-3. Now that you have your service configure and deploy, you want to reproduce this using a kubernetes manifest using YAML in a different namespace or cluster. You can define your Knative service usign the following YAML
-    ```yaml
-    ---
-    apiVersion: serving.knative.dev/v1
-    kind: Service
-    metadata:
-      name: hello
-    spec:
-      template:
+1. Now that you have your service configure and deploy, you want to reproduce this using a kubernetes manifest using YAML in a different namespace or cluster. You can define your Knative service usign the following YAML
+    <details><summary>Show me the YAML</summary>
+
+        ```yaml
+        ---
+        apiVersion: serving.knative.dev/v1
+        kind: Service
         metadata:
-          name: hello-tgzmt-1
+          name: hello
         spec:
-          containers:
-            - env:
-                - name: TARGET
-                  value: World from v1
-              image: gcr.io/knative-samples/helloworld-go
-    ---
-    apiVersion: serving.knative.dev/v1
-    kind: Service
-    metadata:
-      name: hello
-    spec:
-      template:
+          template:
+            metadata:
+              name: hello-v1
+            spec:
+              containers:
+                - env:
+                    - name: TARGET
+                      value: World from v1
+                  image: gcr.io/knative-samples/helloworld-go
+        ---
+        apiVersion: serving.knative.dev/v1
+        kind: Service
         metadata:
-          name: hello-mshgs-2
+          name: hello
         spec:
-          containers:
-            - env:
-                - name: TARGET
-                  value: Knative from v2
-              image: gcr.io/knative-samples/helloworld-go
-    ---
-    apiVersion: serving.knative.dev/v1
-    kind: Service
-    metadata:
-      name: hello
-    spec:
-      template:
+          template:
+            metadata:
+              name: hello-v2
+            spec:
+              containers:
+                - env:
+                    - name: TARGET
+                      value: Knative from v2
+                  image: gcr.io/knative-samples/helloworld-go
+        ---
+        apiVersion: serving.knative.dev/v1
+        kind: Service
         metadata:
-          name: hello-pxgxx-3
+          name: hello
         spec:
-          containers:
-            - env:
-                - name: TARGET
-                  value: OSS NA 2020 from v3
-              image: gcr.io/knative-samples/helloworld-go
-      traffic:
-        - latestRevision: false
-          percent: 0
-          revisionName: hello-tgzmt-1
-          tag: v1
-        - latestRevision: false
-          percent: 0
-          revisionName: hello-mshgs-2
-          tag: v2
-        - latestRevision: true
-          percent: 100
-          tag: v3
-    ```
+          template:
+            metadata:
+              name: hello-v3
+            spec:
+              containers:
+                - env:
+                    - name: TARGET
+                      value: OSS NA 2020 from v3
+                  image: gcr.io/knative-samples/helloworld-go
+          traffic:
+            - latestRevision: false
+              percent: 0
+              revisionName: hello-v1
+              tag: v1
+            - latestRevision: false
+              percent: 0
+              revisionName: hello-v2
+              tag: v2
+            - latestRevision: true
+              percent: 100
+              tag: v3
+        ```
+
+    </details>
+
 
 </details>
