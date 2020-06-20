@@ -7,12 +7,11 @@
 ### Tools
 - Kubernetes Cluster
     - Get a free Kubernetes cluster on [IBM Cloud](https://cloud.ibm.com), also check out the booth at OSS-NA IBM booth during the conference how to get $200 credit.
-    - You can use other kubernetes cluster like minikube or kind
+    - You can use other kubernetes cluster like [minikube](https://minikube.sigs.k8s.io) or [kind](https://kind.sigs.k8s.io/)
 - [Kubernetes CLI]() `kubectl`
 - [Knative CLI](https://knative.dev/docs/install/install-kn/) `kn`
 - [Tekton CLI](https://github.com/tektoncd/cli#installing-tkn) `tkn`
 - [Hey CLI](https://github.com/rakyll/hey#installation) `hey`
-- [YAML Editor](https://github.com/redhat-developer/vscode-yaml)
 
 ### Accounts
 - [GitHub](https://github.com/)
@@ -395,12 +394,15 @@ If using IBM Kubernetes FREE cluster
 
 </details>
 
+<details><summary>5. Using Tekton to Build and Deploy Applications</summary>
+
 ## Using Tekton to Build Applications
 
 - Tekton helps create composable DevOps Automation by putting together **Tasks**, and **Pipelines**
-. Tekton allows to define **Tasks** and **Pipelines** using manifest files in `YAML`
 
-### Configure Access
+<details><summary>5.1 Configure Access for Tekton</summary>
+
+### 5.1 Configure Access for Tekto
 
 1. In this repository we have a sample application, you can see the source code in [src/app.js](./src//app.js) This application is using JavaScript to implement a web server, but you can use any language you want.
     ```javascript
@@ -441,7 +443,11 @@ If using IBM Kubernetes FREE cluster
     kubectl apply -f knative/rbac.yaml
     ```
 
-### Build Task
+</details>
+
+<details><summary>5.2 The Build Tekton Task</summary>
+
+### 5.2 The Build Tekton Task
 
 1. I provided a Tekton Task that can download source code from git, build and push the Image to a registry. Install the task _build_ like this
     ```sh
@@ -467,8 +473,11 @@ If using IBM Kubernetes FREE cluster
     ```sh
     curl -s -o /dev/null -w "%{http_code}\n" https://index.$REGISTRY_SERVER/v1/repositories/$REGISTRY_NAMESPACE/knative-tekton/tags/latest
     ```
+</details>
 
-## Deploy Task
+<details><summary>5.3 The Deploy Tekton Task</summary>
+
+## The Deploy Tekton Task
 
 1. I provided a Tekton Task that can run `kubectl` to deploy the Knative Application using a YAML manifest. Install the task _deploy_ like this
     ```sh
@@ -511,3 +520,6 @@ If using IBM Kubernetes FREE cluster
     Welcome to OSS NA 2020  🎉 🌮 🔥 🤗!
     ```
 
+</details>
+
+</details>
