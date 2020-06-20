@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build
+spec:
+  params:
+    - name: repo-url
+      description: The git repository url
+    - name: revision
+      description: The branch, tag, or git reference from the git repo-url location
+      default: master
+    - name: dir
+      description: Path to the directory to use as context.
+      default: .
+    - name: yaml
+      description: Path to the directory to use as context.
+      default: ""
+    - name: KUBECTL_IMAGE
+      description: The location of the kubectl image.
+      default: docker.io/csantanapr/kubectl
+
+  steps:
+    - name: git-clone
+      image: alpine/git
+      script: |
+        git clone -b $(params.revision) --depth 1 $(params.repo-url) /source
+      volumeMounts:
+        - name: source
+          mountPath: /source
+    - name: build
+      image: $(params.KUBECTL_IMAGE)
+      workingdir: /source
+      script: |
+        kubectl apply -f $(params.dir)/$(params.yaml)
+      volumeMounts:
+        - name: source
+          mountPath: /source
+  volumes:
+    - name: source
+      emptyDir: {}

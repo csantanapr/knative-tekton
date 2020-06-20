@@ -1,0 +1,13 @@
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: demo
+spec:
+  template:
+    spec:
+      containers:
+        - image: docker.io/csantanapr/knative-tekton
+          env:
+            - name: MESSAGE
+              value: Welcome to OSS NA 2020 !

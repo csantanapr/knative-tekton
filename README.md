@@ -400,6 +400,8 @@ If using IBM Kubernetes FREE cluster
 - Tekton helps create composable DevOps Automation by putting together **Tasks**, and **Pipelines**
 . Tekton allows to define **Tasks** and **Pipelines** using manifest files in `YAML`
 
+### Configure Access
+
 1. In this repository we have a sample application, you can see the source code in [src/app.js](./src//app.js) This application is using JavaScript to implement a web server, but you can use any language you want.
     ```javascript
     const app = require("express")();
@@ -433,6 +435,13 @@ If using IBM Kubernetes FREE cluster
     ```sh
     kubectl apply -f tekton/sa.yaml
     ```
+1. We are going to be using Tekton to deploy the Knative Service, we need to configure RBAC to provide edit access to the current namespace `default` to the ServiceAccount `pipeline` if you are using a different namespace than `default` edit the file `knative/rbac.yaml` and provide the namespace where to create the `Role` and the `RoleBinding` fo more info check out the [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) docs. Run the following command to grant access to sa `pipelines`
+    ```sh
+    kubectl apply -f knative/rbac.yaml
+    ```
+
+### Build Task
+
 1. I provided a Tekton Task that can download source code from git, build and push the Image to a registry. Install the task _build_ like this
     ```sh
     kubectl apply -f tekton/task-build.yaml
@@ -453,4 +462,22 @@ If using IBM Kubernetes FREE cluster
       -p CONTEXT=nodejs \
       -s pipeline 
     ```
+1. You can check out the container registry and see that the image was pushed to repository a minute ago, it should return status Code `200`
+    ```sh
+    curl -s -o /dev/null -w "%{http_code}\n" https://index.$REGISTRY_SERVER/v1/repositories/$REGISTRY_NAMESPACE/knative-tekton/tags/latest
+    ```
 
+## Deploy Task
+
+1. I provided a Tekton Task that can run `kubectl` to deploy the Knative Application using a YAML manifest. Install the task _deploy_ like this
+    ```sh
+    kubectl apply -f tekton/task-deploy.yaml
+    ```
+1. Let's use the Tekton CLU to test our _deploy_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application yaml manifest is located and the file name in our case is `knative` and `service.yaml` .
+    ```sh
+    tkn task start deploy --showlog \
+      -p repo-url=https://github.com/csantanapr/knative-tekton \
+      -p dir=knative \
+      -p yaml=service.yaml \
+      -s pipeline 
+    ```
