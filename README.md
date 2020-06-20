@@ -64,8 +64,9 @@ If using IBM Kubernetes FREE cluster
 
 ### Setup Container Registry
 
-1. Set the environment variables `REGISTRY_NAMESPACE` and `REGISTRY_PASSWORD`, The `REGISTRY_NAMESPACE` most likely would be your dockerhub username.
+1. Set the environment variables `REGISTRY_SERVER`, `REGISTRY_NAMESPACE` and `REGISTRY_PASSWORD`, The `REGISTRY_NAMESPACE` most likely would be your dockerhub username. For Dockerhub use `docker.io` as the value for ` 
     ```sh
+    REGISTRY_SERVER='docker.io'
     REGISTRY_NAMESPACE='REPLACEME_DOCKER_USERNAME_VALUE'
     REGISTRY_PASSWORD='REPLACEME_DOCKER_PASSWORD'
     ```
@@ -137,9 +138,9 @@ If using IBM Kubernetes FREE cluster
 
 </details>
 
-<details><summary>3. Deploy Knative Applications</summary>
+<details><summary>3. Using Knative to Run Serverless Applications</summary>
 
-## Deploy Knative Applications
+## Using Knative to Run Serverless Applications
 
 1. Set the environment variable `BASE_URL` to the kubernetes namespace with Domain name `<namespace>.<domainname>`
     ```sh
@@ -393,4 +394,53 @@ If using IBM Kubernetes FREE cluster
     ```
 
 </details>
+
+## Using Tekton to Build Applications
+
+- Tekton helps create composable DevOps Automation by putting together **Tasks**, and **Pipelines**
+. Tekton allows to define **Tasks** and **Pipelines** using manifest files in `YAML`
+
+1. In this repository we have a sample application, you can see the source code in [src/app.js](./src//app.js) This application is using JavaScript to implement a web server, but you can use any language you want.
+    ```javascript
+    const app = require("express")();
+    const server = require("http").createServer(app);
+    const port = process.env.PORT || "8080";
+
+    app.get('/', (req, res) => res.send('Hello World'));
+    server.listen(port, function () {
+        console.log(`App listening on ${port}`);
+    });
+    ```
+1. We need to package our application in a Container Image and store this Image in a Container Registry. Since we are going to need to create secrets with the registry credentials we are going to create a ServiceAccount `pipelines` with the associated secret `regcred`. Make sure you setup your container credentials as environment variables. Checkout the [Setup Container Registry](#setup-container-registry) in the Setup Environment section on this tutorial.
+    ```sh
+    kubectl create secret docker-registry regcred \
+      --docker-server=\"${REGISTRY_SERVER}\" \
+      --docker-username=\"${REGISTRY_NAMESPACE}\" \
+      --docker-password=\"${REGISTRY_PASSWORD}\"
+    ```
+1. Create a ServiceAccount `pipeline` that contains the secret `regsecret` that we just created
+    ```yaml
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: pipeline
+    secrets:
+      - name: regcred
+    ```
+    Run the following command with the provided `YAML`
+    ```sh
+    kubectl apply -f tekton/sa.yaml
+    ```
+1. I provided a Tekton Task that can download source code from git, build and push the Image to a registry. Install the task _build_ like this
+    ```sh
+    kubectl apply -f tekton/task-build.yaml
+    ```
+1. Let's use the Tekton CLI to test our _build_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application in our case is `nodejs`. The repository image name is `knative-tekton`
+  ```sh
+  tkn task start build --showlog \
+    -p repo-url=https://github.com/csantanapr/knative-tekton \
+    -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
+    -p CONTEXT=nodejs
+    -s pipeline 
+  ```
 
