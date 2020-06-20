@@ -294,7 +294,7 @@ If using IBM Kubernetes FREE cluster
 1. Now that you have your service configure and deploy, you want to reproduce this using a kubernetes manifest using YAML in a different namespace or cluster. You can define your Knative service using the following YAML you can use the command `kn service export`
     <details><summary>Show me the YAML</summary>
 
-        ```yaml
+        ```
         ---
         apiVersion: serving.knative.dev/v1
         kind: Service
@@ -353,13 +353,13 @@ If using IBM Kubernetes FREE cluster
               percent: 100
               tag: v3
         ```
-        If you want to deploy the applicatio you can delete it and apply the YAML
-        ```sh
-        kn delete service hello
-        kn 
-        ```
 
     </details>
+    If you want to deploy the applicatio you can delete it and apply the YAML
+    ```sh
+    kn delete service hello
+    kubectl apply -f ./knative/v1v2v3.yaml
+    ```
 1. Delete the Application and all it's revisions
     ```sh
     kn service delete hello
