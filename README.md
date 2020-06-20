@@ -523,3 +523,7 @@ If using IBM Kubernetes FREE cluster
 </details>
 
 </details>
+
+## 6. Trigger Tekton with Git WebHooks
+
+To use Tekton Triggers you 

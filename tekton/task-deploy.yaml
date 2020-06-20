@@ -27,7 +27,7 @@ spec:
       volumeMounts:
         - name: source
           mountPath: /source
-    - name: build
+    - name: kubectl-apply
       image: $(params.KUBECTL_IMAGE)
       workingdir: /source
       script: |

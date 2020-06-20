@@ -38,7 +38,7 @@ spec:
       volumeMounts:
         - name: source
           mountPath: /source
-    - name: build
+    - name: build-image
       image: $(params.BUILDER_IMAGE)
       workingdir: /source
       script: |
