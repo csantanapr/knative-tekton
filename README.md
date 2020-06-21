@@ -452,18 +452,6 @@ If using IBM Kubernetes FREE cluster
 
 ### 5.1 Configure Access for Tekton
 
-1. In this repository we have a sample application, you can see the source code in [src/app.js](./src//app.js) This application is using JavaScript to implement a web server, but you can use any language you want.
-    ```javascript
-    const app = require("express")()
-    const server = require("http").createServer(app)
-    const port = process.env.PORT || "8080"
-    const message = process.env.TARGET || 'Hello World'
-
-    app.get('/', (req, res) => res.send(message))
-    server.listen(port, function () {
-        console.log(`App listening on ${port}`)
-    });
-    ```
 1. We need to package our application in a Container Image and store this Image in a Container Registry. Since we are going to need to create secrets with the registry credentials we are going to create a ServiceAccount `pipelines` with the associated secret `regcred`. Make sure you setup your container credentials as environment variables. Checkout the [Setup Container Registry](#setup-container-registry) in the Setup Environment section on this tutorial. This commands will print your credentials make sure no one is looking over, the printed command is what you need to run.
     ```sh
     echo kubectl create secret docker-registry regcred \
@@ -497,6 +485,18 @@ If using IBM Kubernetes FREE cluster
 
 ### 5.2 The Build Tekton Task
 
+1. In this repository we have a sample application, you can see the source code in [./nodejs/src/app.js](./nodejs/src/app.js) This application is using JavaScript to implement a web server, but you can use any language you want.
+    ```javascript
+    const app = require("express")()
+    const server = require("http").createServer(app)
+    const port = process.env.PORT || "8080"
+    const message = process.env.TARGET || 'Hello World'
+
+    app.get('/', (req, res) => res.send(message))
+    server.listen(port, function () {
+        console.log(`App listening on ${port}`)
+    });
+    ```
 1. I provided a Tekton Task that can download source code from git, build and push the Image to a registry. Install the task _build_ like this
     ```sh
     kubectl apply -f tekton/task-build.yaml
