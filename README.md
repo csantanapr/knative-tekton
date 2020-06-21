@@ -2,7 +2,7 @@
 
 <details><summary>1. Setup Environment</summary>
 
-## Setup Environment
+## 1. Setup Environment
 
 ### Tools
 - Kubernetes Cluster
@@ -71,9 +71,9 @@ If using IBM Kubernetes FREE cluster
     ```
 </details>
 
-<details><summary>2. Install Knative</summary>
+<details><summary>2. Install Knative Serving</summary>
 
-## Install Knative
+## 2. Install Knative Serving
 
 1. Install Knative Serving in namespace `knative-serving`
     ```sh
@@ -367,9 +367,9 @@ If using IBM Kubernetes FREE cluster
 
 </details>
 
-<details><summary>4. Install Tekton</summary>
+<details><summary>4. Install Tekton Pipelines</summary>
 
-## Install Tekton
+## 4. Install Tekton
 
 1. Install Tekton Pipelines in namespace `tekton-pipelines`
     ```sh
@@ -438,9 +438,9 @@ If using IBM Kubernetes FREE cluster
     ```sh
     kubectl apply -f tekton/sa.yaml
     ```
-1. We are going to be using Tekton to deploy the Knative Service, we need to configure RBAC to provide edit access to the current namespace `default` to the ServiceAccount `pipeline` if you are using a different namespace than `default` edit the file `knative/rbac.yaml` and provide the namespace where to create the `Role` and the `RoleBinding` fo more info check out the [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) docs. Run the following command to grant access to sa `pipelines`
+1. We are going to be using Tekton to deploy the Knative Service, we need to configure RBAC to provide edit access to the current namespace `default` to the ServiceAccount `pipeline` if you are using a different namespace than `default` edit the file `tekton/rbac.yaml` and provide the namespace where to create the `Role` and the `RoleBinding` fo more info check out the [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) docs. Run the following command to grant access to sa `pipelines`
     ```sh
-    kubectl apply -f knative/rbac.yaml
+    kubectl apply -f tekton/rbac.yaml
     ```
 
 </details>
@@ -457,14 +457,14 @@ If using IBM Kubernetes FREE cluster
     ```sh
     tkn task ls
     ```
-1. We can also get more details about the _build_ **Task** using `tkn describe`
+1. We can also get more details about the _build_ **Task** using `tkn task describe`
     ```
     tkn task describe build
     ```
 1. Let's use the Tekton CLI to test our _build_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application in our case is `nodejs`. The repository image name is `knative-tekton`
     ```sh
     tkn task start build --showlog \
-      -p repo-url=https://github.com/csantanapr/knative-tekton \
+      -p repo-url=${GITHUB_REPO_URL} \
       -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
       -p CONTEXT=nodejs \
       -s pipeline 
@@ -477,13 +477,13 @@ If using IBM Kubernetes FREE cluster
 
 <details><summary>5.3 The Deploy Tekton Task</summary>
 
-## The Deploy Tekton Task
+### 5.3 The Deploy Tekton Task
 
 1. I provided a Tekton Task that can run `kubectl` to deploy the Knative Application using a YAML manifest. Install the task _deploy_ like this
     ```sh
     kubectl apply -f tekton/task-deploy.yaml
     ```
-1. I provided a YAML that defines our Knative Application in [knative/service.yaml](./knative/service.yaml)
+1. I provided a Task YAML that defines our Knative Application in [knative/service.yaml](./knative/service.yaml)
     ```yaml
     apiVersion: serving.knative.dev/v1
     kind: Service
@@ -499,15 +499,50 @@ If using IBM Kubernetes FREE cluster
                 - name: MESSAGE
                   value: Welcome to OSS NA 2020 !
     ```
-1. Let's use the Tekton CLU to test our _deploy_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application yaml manifest is located and the file name in our case is `knative` and `service.yaml` .
+1. Let's use the Tekton CLI to test our _deploy_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application yaml manifest is located and the file name in our case is `knative` and `service.yaml` .
     ```sh
     tkn task start deploy --showlog \
-      -p repo-url=https://github.com/csantanapr/knative-tekton \
+      -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
+      -p repo-url=${GITHUB_REPO_URL} \
       -p dir=knative \
       -p yaml=service.yaml \
       -s pipeline 
     ```
 1. You can check out that the Knative Application was deploy
+    ```sh
+    kn service list demo
+    ```
+
+</details>
+
+<details><summary>5.4 The Build and Deploy Pipeline</summary>
+
+### 5.4 The Build and Deploy Pipeline
+
+1. If we want to build the application image and then deploy the application, we can run the Tasks **build** and **deploy** by defining a **Pipeline** that contains the two Tasks, deploy the Pipeline `build-deploy`
+    ```sh
+    kubectl apply -f tekton/pipeline-build-deploy.yaml
+    ```
+1. You can list the pipeline that we just created using the `tkn` CLI
+    ```sh
+    tkn pipeline ls
+    ```
+1. We can also get more details about the _build-deploy_ **Pipeline** using `tkn pipeline describe`
+    ```
+    tkn pipeline describe build-deploy
+    ```
+1. Let's use the Tekton CLI to test our _build-deploy_ **Pipeline** you need to pass the ServiceAccount `pipeline` to be use to run the Tasks. You will need to pass the GitHub URL to your fork or use this repository. You will also pass the Image location where to push in the the registry and where Kubernetes should pull the image for the Knative Application. The directory and filename for the Kantive yaml are already specified in the Pipeline definition.
+    ```sh
+    tkn pipeline start build-deploy --showlog \
+      -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
+      -p repo-url=${GITHUB_REPO_URL} \
+      -s pipeline 
+    ```
+1. You can inpect the results and duration by describing the last **PipelineRun**
+    ```sh
+    tkn pipelinerun describe --last
+    ```
+1. Check that the latest Knative Application revision is ready
     ```sh
     kn service list demo
     ```
@@ -519,11 +554,57 @@ If using IBM Kubernetes FREE cluster
     ```
     Welcome to OSS NA 2020  🎉 🌮 🔥 🤗!
     ```
-
 </details>
 
 </details>
 
-## 6. Trigger Tekton with Git WebHooks
 
-To use Tekton Triggers you 
+
+
+## 6 Install Tekton Triggers
+
+### 6.1 Install Tekton Triggers
+
+1. Install Tekton Triggers in namespace `tekton-pipelines`
+    ```sh
+    kubectl apply --filename  https://storage.googleapis.com/tekton-releases/triggers/previous/v0.5.0/release.yaml
+    ``` 
+
+### 6.2 Create TriggerTemplate, TriggerBinding
+
+1. When the Webhook invokes we want to start a Pipeline, we will a `TriggerTemplate` to use a specification on which Tekton resources should be created, in our case will be creating a new `PipelineRun` this will start a new `Pipeline` install
+    ```sh
+    kubectl apply -f tekton/trigger-template.yaml
+    ```
+1. When the Webhook invokes we want to extract information from the Web Hook http request sent by the Git Server, we will use a `TriggerBinding` this information is what gets passed to the `TriggerTemplate`
+    ```sh
+    kubectl apply -f tekton/trigger-binding.yaml
+    ```
+
+### 6.3 Create Trigger EventListener
+
+1. To be able to handle the http request sent by the GitHub Webhook, we need a webserver. Tekton provides a way to define this listeners that takes the `TriggerBinding` and the `TriggerTemplate` as specification. We can specify Interceptors to handle any customization for example I only want to start a new **Pipeline** only when push happens on the main branch.
+    ```sh
+    kubectl apply -f tekton/trigger-listener.yaml
+    ```
+1. The Eventlister creates a deployment and a service you can list both using this command
+    ```sh
+    kubectl get deployments,eventlistener,svc -l eventlistener=cicd
+    ```
+
+### 6.4 Get URL for Git Hook
+
+- It will depend on your cluster and how traffic is configured into your Kubernetes Cluster, you would need to configure an Application Load Balancer (ALB), Ingress, or in case of OpenShift a Route. If you are running the Kubernetes cluster on your local workstation using something minikube, kind, docker-desktop, or k3s then you I recommend a Cloud Native Tunnel solution like [inlets](https://docs.inlets.dev/#/) a by the open source contributor [Alex Ellis](https://twitter.com/alexellisuk) 
+
+1. Expose the EventListener as `NodePort`
+    ```sh
+    kubectl expose service el-cicd --name el-cicd-ingress --type=NodePort
+    ```
+1. Get the url using the external IP of the worker node and the `NodePort` assign. Set an environment variable `GIT_WEBHOOK_URL`
+    ```sh
+    EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    GIT_WEBHOOK_NODEPORT=$(kubectl get svc el-cicd-ingress -o jsonpath='{.spec.ports[0].nodePort}')
+    GIT_WEBHOOK_URL=http://$EXTERNAL_IP:$GIT_WEBHOOK_NODEPORT
+    echo GIT_WEBHOOK_URL=$GIT_WEBHOOK_URL
+    ```
+    **WARNING:** Take into account that this URL is insecure is using http and not https, this means you should not use this type of URL for real work environments, In that case you would need to expose the service for the eventlistener using a secure connection using *https** 
