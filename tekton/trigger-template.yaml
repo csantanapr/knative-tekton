@@ -9,12 +9,14 @@ spec:
       default: master
     - name: gitrepositoryurl
       description: The git repository url
+    - name: gittruncatedsha
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
         generateName: build-deploy-run-
       spec:
+        serviceAccountName: pipeline
         pipelineRef:
           name: build-deploy
         params:
@@ -22,3 +24,5 @@ spec:
             value: $(params.gitrevision)
           - name: repo-url
             value: $(params.gitrepositoryurl)
+          - name: image-tag
+            value: $(params.gittruncatedsha)

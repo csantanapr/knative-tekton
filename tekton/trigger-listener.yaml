@@ -13,3 +13,6 @@ spec:
       interceptors:
         - cel:
             filter: "header.match('X-GitHub-Event', 'push') && body.ref == 'refs/heads/master'"
+            overlays:
+              - key: extensions.truncated_sha
+                expression: "body.pull_request.head.sha.truncate(7)"
