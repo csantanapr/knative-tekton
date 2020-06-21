@@ -11,7 +11,6 @@
 - [Kubernetes CLI]() `kubectl`
 - [Knative CLI](https://knative.dev/docs/install/install-kn/) `kn`
 - [Tekton CLI](https://github.com/tektoncd/cli#installing-tkn) `tkn`
-- [Hey CLI](https://github.com/rakyll/hey#installation) `hey`
 
 ### Accounts
 - [GitHub](https://github.com/)
