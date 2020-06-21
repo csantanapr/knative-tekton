@@ -26,7 +26,9 @@ spec:
     - name: git-clone
       image: alpine/git
       script: |
-        git clone -b $(params.revision) --depth 1 $(params.repo-url) /source
+        git clone $(params.repo-url) /source
+        cd /source
+        git checkout $(params.revision)
       volumeMounts:
         - name: source
           mountPath: /source
