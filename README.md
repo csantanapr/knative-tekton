@@ -497,7 +497,75 @@ If using IBM Kubernetes FREE cluster
         console.log(`App listening on ${port}`)
     });
     ```
-1. I provided a Tekton Task that can download source code from git, build and push the Image to a registry. Install the task _build_ like this
+1. I provided a Tekton Task that can download source code from git, build and push the Image to a registry. Install the task _build_ like this.
+    <details><summary>Show me the Build Task YAML</summary>
+
+    ```yaml
+    apiVersion: tekton.dev/v1beta1
+    kind: Task
+    metadata:
+    name: build
+    spec:
+    params:
+        - name: repo-url
+        description: The git repository url
+        - name: revision
+        description: The branch, tag, or git reference from the git repo-url location
+        default: master
+        - name: image
+        description: "The location where to push the image in the form of <server>/<namespace>/<repository>:<tag>"
+        - name: CONTEXT
+        description: Path to the directory to use as context.
+        default: .
+        - name: BUILDER_IMAGE
+        description: The location of the buildah builder image.
+        default: quay.io/buildah/stable:v1.14.8
+        - name: STORAGE_DRIVER
+        description: Set buildah storage driver
+        default: overlay
+        - name: DOCKERFILE
+        description: Path to the Dockerfile to build.
+        default: ./Dockerfile
+        - name: TLSVERIFY
+        description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
+        default: "false"
+        - name: FORMAT
+        description: The format of the built container, oci or docker
+        default: "oci"
+
+    steps:
+        - name: git-clone
+        image: alpine/git
+        script: |
+            git clone $(params.repo-url) /source
+            cd /source
+            git checkout $(params.revision)
+        volumeMounts:
+            - name: source
+            mountPath: /source
+        - name: build-image
+        image: $(params.BUILDER_IMAGE)
+        workingdir: /source
+        script: |
+            echo "Building Image $(params.image)"
+            buildah --storage-driver=$(params.STORAGE_DRIVER) bud --format=$(params.FORMAT) --tls-verify=$(params.TLSVERIFY) -f $(params.DOCKERFILE) -t $(params.image) $(params.CONTEXT)
+            echo "Pushing Image $(params.image)"
+            buildah  --storage-driver=$(params.STORAGE_DRIVER) push --tls-verify=$(params.TLSVERIFY) --digestfile ./image-digest $(params.image) docker://$(params.image)
+        securityContext:
+            privileged: true
+        volumeMounts:
+            - name: varlibcontainers
+            mountPath: /var/lib/containers
+            - name: source
+            mountPath: /source
+    volumes:
+        - name: varlibcontainers
+        emptyDir: {}
+        - name: source
+        emptyDir: {}
+    ```
+    </details>
+
     ```sh
     kubectl apply -f tekton/task-build.yaml
     ```
