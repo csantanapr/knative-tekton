@@ -125,7 +125,6 @@ If using IBM Kubernetes FREE cluster
       externalIPs:
         - $EXTERNAL_IP
     EOF
-    kubectl get svc -n kourier-system kourier-ingress
     ```
 1. Configure Knative to use Kourier
     ```sh
@@ -134,6 +133,12 @@ If using IBM Kubernetes FREE cluster
       --type merge \
       --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
     ```
+1. Verify that Knative is Installed properly all pods should be in `Running` state and our `kourier-ingress` setup.
+```
+kubectl get pods -n knative-serving
+kubectl get pods -n kourier-system
+kubectl get svc  -n kourier-system kourier-ingress
+```
 
 </details>
 
