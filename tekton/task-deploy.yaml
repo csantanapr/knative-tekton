@@ -15,6 +15,9 @@ spec:
     - name: yaml
       description: Path to the directory to use as context.
       default: ""
+    - name: image
+      description: Path to the container image
+      default: ""
     - name: KUBECTL_IMAGE
       description: The location of the kubectl image.
       default: docker.io/csantanapr/kubectl
@@ -31,7 +34,14 @@ spec:
       image: $(params.KUBECTL_IMAGE)
       workingdir: /source
       script: |
+
+        if [ "$(params.image)" != "" ] && [ "$(params.yaml)" != "" ]; then
+          yq w -i $(params.dir)/$(params.yaml) "spec.template.spec.containers[0].image" "$(params.image)"
+          cat $(params.dir)/$(params.yaml)
+        fi
+
         kubectl apply -f $(params.dir)/$(params.yaml)
+
       volumeMounts:
         - name: source
           mountPath: /source
