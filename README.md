@@ -374,8 +374,16 @@ If using IBM Kubernetes FREE cluster
 
     If you want to deploy usign YAML, delete the Application with `kn` and redeploy with `kubectl`
     ```sh
-    kn delete service hello
-    kubectl apply -f ./knative/v1v2v3.yaml
+    kn service delete hello
+    kubectl apply -f knative/v1.yaml
+    kubectl apply -f knative/v2.yaml
+    kubectl apply -f knative/v3.yaml
+    ```
+    Try the service again
+    ```sh
+    while true; do
+    curl hello.$SUB_DOMAIN 
+    done
     ```
 1. Delete the Application and all it's revisions
     ```sh
