@@ -705,6 +705,52 @@ If using IBM Kubernetes FREE cluster
 1. If we want to build the application image and then deploy the application, we can run the Tasks **build** and **deploy** by defining a **Pipeline** that contains the two Tasks, deploy the Pipeline `build-deploy`.
     <details><summary>Show me the Pipeline YAML</summary>
 
+    ```yaml
+    apiVersion: tekton.dev/v1beta1
+    kind: Pipeline
+    metadata:
+    name: build-deploy
+    spec:
+    params:
+        - name: repo-url
+        default: https://github.com/csantanapr/knative-tekton
+        - name: revision
+        default: master
+        - name: image
+        default: docker.io/csantanapr/knative-tekton
+        - name: image-tag
+        default: latest
+        - name: CONTEXT
+        default: nodejs
+    tasks:
+        - name: build
+        taskRef:
+            name: build
+        params:
+            - name: image
+            value: $(params.image):$(params.image-tag)
+            - name: repo-url
+            value: $(params.repo-url)
+            - name: revision
+            value: $(params.revision)
+            - name: CONTEXT
+            value: $(params.CONTEXT)
+        - name: deploy
+        runAfter: [build]
+        taskRef:
+            name: deploy
+        params:
+            - name: image
+            value: $(params.image):$(params.image-tag)
+            - name: repo-url
+            value: $(params.repo-url)
+            - name: revision
+            value: $(params.revision)
+            - name: dir
+            value: knative
+            - name: yaml
+            value: service.yaml
+    ```
     </details>
 
     ```sh
@@ -766,11 +812,65 @@ If using IBM Kubernetes FREE cluster
 
 ### 6.2 Create TriggerTemplate, TriggerBinding
 
-1. When the Webhook invokes we want to start a Pipeline, we will a `TriggerTemplate` to use a specification on which Tekton resources should be created, in our case will be creating a new `PipelineRun` this will start a new `Pipeline` install
+1. When the Webhook invokes we want to start a Pipeline, we will a `TriggerTemplate` to use a specification on which Tekton resources should be created, in our case will be creating a new `PipelineRun` this will start a new `Pipeline` install.
+    <details><summary>Show me the TriggerTemplate YAML</summary>
+
+    ```yaml
+    apiVersion: triggers.tekton.dev/v1alpha1
+    kind: TriggerTemplate
+    metadata:
+    name: build-deploy
+    spec:
+    params:
+        - name: gitrevision
+        description: The git revision
+        default: master
+        - name: gitrepositoryurl
+        description: The git repository url
+        - name: gittruncatedsha
+    resourcetemplates:
+        - apiVersion: tekton.dev/v1beta1
+        kind: PipelineRun
+        metadata:
+            generateName: build-deploy-run-
+        spec:
+            serviceAccountName: pipeline
+            pipelineRef:
+            name: build-deploy
+            params:
+            - name: revision
+                value: $(params.gitrevision)
+            - name: repo-url
+                value: $(params.gitrepositoryurl)
+            - name: image-tag
+                value: $(params.gittruncatedsha)
+    ```
+
+    </details>
+
     ```sh
     kubectl apply -f tekton/trigger-template.yaml
     ```
-1. When the Webhook invokes we want to extract information from the Web Hook http request sent by the Git Server, we will use a `TriggerBinding` this information is what gets passed to the `TriggerTemplate`
+1. When the Webhook invokes we want to extract information from the Web Hook http request sent by the Git Server, we will use a `TriggerBinding` this information is what gets passed to the `TriggerTemplate`.
+    <details><summary>Show me the TriggerBinding YAML</summary>
+
+    ```yaml
+    apiVersion: triggers.tekton.dev/v1alpha1
+    kind: TriggerBinding
+    metadata:
+    name: build-deploy
+    spec:
+    params:
+        - name: gitrevision
+        value: $(body.head_commit.id)
+        - name: gitrepositoryurl
+        value: $(body.repository.url)
+        - name: gittruncatedsha
+        value: $(body.extensions.truncated_sha)
+    ```
+
+    </details>
+
     ```sh
     kubectl apply -f tekton/trigger-binding.yaml
     ```
@@ -782,6 +882,31 @@ If using IBM Kubernetes FREE cluster
 ### 6.3 Create Trigger EventListener
 
 1. To be able to handle the http request sent by the GitHub Webhook, we need a webserver. Tekton provides a way to define this listeners that takes the `TriggerBinding` and the `TriggerTemplate` as specification. We can specify Interceptors to handle any customization for example I only want to start a new **Pipeline** only when push happens on the main branch.
+    <details><summary>Show me the Trigger Eventlistener YAML</summary>
+
+    ```yaml
+    apiVersion: triggers.tekton.dev/v1alpha1
+    kind: EventListener
+    metadata:
+    name: cicd
+    spec:
+    serviceAccountName: pipeline
+    triggers:
+        - name: cicd-trig
+        bindings:
+            - ref: build-deploy
+        template:
+            name: build-deploy
+        interceptors:
+            - cel:
+                filter: "header.match('X-GitHub-Event', 'push') && body.ref == 'refs/heads/master'"
+                overlays:
+                - key: extensions.truncated_sha
+                    expression: "body.head_commit.id.truncate(7)"
+    ```
+
+    </details>
+
     ```sh
     kubectl apply -f tekton/trigger-listener.yaml
     ```
@@ -794,7 +919,7 @@ If using IBM Kubernetes FREE cluster
 
 <details><summary>6.4 Get URL for Git Hook</summary>
 
-### 6.4 Get URL for Git Hook
+### 6.4 Get URL for Git WebHook
 
 - It will depend on your cluster and how traffic is configured into your Kubernetes Cluster, you would need to configure an Application Load Balancer (ALB), Ingress, or in case of OpenShift a Route. If you are running the Kubernetes cluster on your local workstation using something minikube, kind, docker-desktop, or k3s then you I recommend a Cloud Native Tunnel solution like [inlets](https://docs.inlets.dev/#/) a by the open source contributor [Alex Ellis](https://twitter.com/alexellisuk) 
 
