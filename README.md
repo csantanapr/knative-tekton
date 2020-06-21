@@ -144,13 +144,18 @@ If using IBM Kubernetes FREE cluster
 
 <details><summary>3. Using Knative to Run Serverless Applications</summary>
 
-## Using Knative to Run Serverless Applications
+## 3. Using Knative to Run Serverless Applications
 
-1. Set the environment variable `BASE_URL` to the kubernetes namespace with Domain name `<namespace>.<domainname>`
+1. Set the environment variable `SUB_DOMAIN` to the kubernetes namespace with Domain name `<namespace>.<domainname>`
     ```sh
     SUB_DOMAIN="$(kubectl config view --minify --output 'jsonpath={..namespace}').$KNATIVE_DOMAIN"
     echo SUB_DOMAIN=$SUB_DOMAIN
     ```
+
+<details><summary>3.1 Create Knative Service</summary>
+
+### 3.1 Create Knative Service
+
 1. Using the Knative CLI `kn` deploy an application usig a Container Image
     ```sh
     kn service create hello --image gcr.io/knative-samples/helloworld-go
@@ -190,8 +195,11 @@ If using IBM Kubernetes FREE cluster
     hello-r4vz7-deployment-c5d4b88f7-rr8cd   2/2     Running
     ```
     Some people call this **Serverless** 🎉 🌮 🔥
+</details>
 
-## Using the kn CLI
+<details><summary>3.2 Updating the Knative service</summary>
+
+### 3.2 Updating the Knative service 
 
 1. Update the service hello with a new environment variable `TARGET`
     ```sh
@@ -206,7 +214,11 @@ If using IBM Kubernetes FREE cluster
     Hello World from v1!
     ```
 
-## Traffic Splitting
+</details>
+
+<details><summary>3.3 Knative Service Traffic Splitting</summary>
+
+### 3.3 Knative Service Traffic Splitting
 
 1. Update the service hello by updating the environment variable `TARGET`, tag the previous version `v1`, send 25% traffic to this new version and leaving 75% of the traffic to `v1`
     ```sh
@@ -297,7 +309,7 @@ If using IBM Kubernetes FREE cluster
     Hello OSS NA 2020 from v3!
     ```
 1. Now that you have your service configure and deploy, you want to reproduce this using a kubernetes manifest using YAML in a different namespace or cluster. You can define your Knative service using the following YAML you can use the command `kn service export`
-    <details><summary>Show me the YAML</summary>
+    <details><summary>Show me the Knative YAML</summary>
 
     ```yaml
     ---
@@ -369,6 +381,8 @@ If using IBM Kubernetes FREE cluster
     ```sh
     kn service delete hello
     ```
+
+</details>
 
 </details>
 
@@ -569,12 +583,18 @@ If using IBM Kubernetes FREE cluster
 
 ## 6. Automate the Tekton Pipeline using Git Web Hooks
 
+<details><summary>6.1 Install Tekton Triggers</summary>
+
 ### 6.1 Install Tekton Triggers
 
 1. Install Tekton Triggers in namespace `tekton-pipelines`
     ```sh
     kubectl apply --filename  https://storage.googleapis.com/tekton-releases/triggers/previous/v0.5.0/release.yaml
     ``` 
+
+</details>
+
+<details><summary>6.2 Create TriggerTemplate, TriggerBinding</summary>
 
 ### 6.2 Create TriggerTemplate, TriggerBinding
 
@@ -587,6 +607,10 @@ If using IBM Kubernetes FREE cluster
     kubectl apply -f tekton/trigger-binding.yaml
     ```
 
+</details>
+
+<details><summary>6.3 Create Trigger EventListener</summary>
+
 ### 6.3 Create Trigger EventListener
 
 1. To be able to handle the http request sent by the GitHub Webhook, we need a webserver. Tekton provides a way to define this listeners that takes the `TriggerBinding` and the `TriggerTemplate` as specification. We can specify Interceptors to handle any customization for example I only want to start a new **Pipeline** only when push happens on the main branch.
@@ -597,6 +621,10 @@ If using IBM Kubernetes FREE cluster
     ```sh
     kubectl get deployments,eventlistener,svc -l eventlistener=cicd
     ```
+
+</details>
+
+<details><summary>6.4 Get URL for Git Hook</summary>
 
 ### 6.4 Get URL for Git Hook
 
@@ -648,5 +676,7 @@ If using IBM Kubernetes FREE cluster
     ```
     My First Serveless App @ OSS NA 2020  🎉 🌮 🔥 🤗!
     ```
+
+</details>
 
 </details>
