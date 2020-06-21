@@ -61,5 +61,5 @@ subjects:
     namespace: default
 roleRef:
   kind: Role
-  name: knative-edit
+  name: pipeline
   apiGroup: rbac.authorization.k8s.io
