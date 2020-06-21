@@ -44,13 +44,14 @@ If using IBM Kubernetes FREE cluster
 ### Setup Git
 
 1. Fork this repository https://github.com/csantanapr/knative-tekton
-1. Set the environment variable `GITHUB_REPO_URL` to the url of your fork, not mine.
+1. Set the environment variable `GIT_REPO_URL` to the url of your fork, not mine. And your Git username `GIT_USERNAME`
     ```sh
-    GITHUB_REPO_URL=`https://github.com/REPLACEME/knative-tekton`
+    GIT_REPO_URL='https://github.com/REPLACEME/knative-tekton'
+    GIT_USERNAME='REPLACE_WITH_USERNAME_FOR_AUTH'
     ```
 1. Clone the repository and change directory
     ```sh
-    git clone $GITHUB_REPO_URL
+    git clone $GIT_REPO_URL
     cd knative-tekton
     ```
 1. Generate [GitHub new token](https://github.com/settings/tokens). 
@@ -58,7 +59,7 @@ If using IBM Kubernetes FREE cluster
     <!--TODO: double check what are the minimum access for this tutorial -->
 1. Set the following environment variables
     ```sh
-    GITHUB_ACCESS_TOKEN='REPLACEME_TOKEN_VALUE'
+    GIT_ACCESS_TOKEN='REPLACEME_TOKEN_VALUE'
     ```
 
 ### Setup Container Registry
@@ -464,7 +465,7 @@ If using IBM Kubernetes FREE cluster
 1. Let's use the Tekton CLI to test our _build_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application in our case is `nodejs`. The repository image name is `knative-tekton`
     ```sh
     tkn task start build --showlog \
-      -p repo-url=${GITHUB_REPO_URL} \
+      -p repo-url=${GIT_REPO_URL} \
       -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
       -p CONTEXT=nodejs \
       -s pipeline 
@@ -503,7 +504,7 @@ If using IBM Kubernetes FREE cluster
     ```sh
     tkn task start deploy --showlog \
       -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
-      -p repo-url=${GITHUB_REPO_URL} \
+      -p repo-url=${GIT_REPO_URL} \
       -p dir=knative \
       -p yaml=service.yaml \
       -s pipeline 
@@ -535,7 +536,7 @@ If using IBM Kubernetes FREE cluster
     ```sh
     tkn pipeline start build-deploy --showlog \
       -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
-      -p repo-url=${GITHUB_REPO_URL} \
+      -p repo-url=${GIT_REPO_URL} \
       -s pipeline 
     ```
 1. You can inpect the results and duration by describing the last **PipelineRun**
@@ -560,8 +561,9 @@ If using IBM Kubernetes FREE cluster
 
 
 
+<details><summary>6. Automate the Tekton Pipeline using Git Web Hooks Triggers</summary>
 
-## 6 Install Tekton Triggers
+## 6. Automate the Tekton Pipeline using Git Web Hooks
 
 ### 6.1 Install Tekton Triggers
 
@@ -615,3 +617,32 @@ If using IBM Kubernetes FREE cluster
     1. Copy and paste the `$GIT_WEBHOOK_URL` value into the **Payload URL**
     1. Select Content type **application/json**
     1. Click **Add webhook**
+1. (Optional) Another option instead of doing it manually you can use the following to create the git webhook programatically
+    ```sh
+    curl -v -X POST -u $GIT_USERNAME:$GIT_ACCESS_TOKEN \
+    -d "{\"name\": \"web\",\"active\": true,\"events\": [\"push\"],\"config\": {\"url\": \"$GIT_WEBHOOK_URL\",\"content_type\": \"json\",\"insecure_ssl\": \"1\"}}" \
+    -L https://api.github.com/repos/$GIT_USERNAME/knative-tekton/hooks
+    ```
+1. Now make a change to application manifest such like changing the message in [knative/service.yaml](./knative/service.yaml) to something like `My First Serveless App @ OSS NA 2020  🎉 🌮 🔥 🤗!` and push the change to the default branch
+1. A new Tekton **PipelineRun** gets created starting a new **Pipeline** Instance. You can check in the Tekton Dashboard for progress of use the tkn CLI
+    ```sh
+    tkn pipeline logs -f --last
+    ```
+1. To see the details of the execution of the PipelineRun use the tkn CLI
+    ```sh
+    tkn pipelinerun describe --last
+    ```
+1. The Knative Application Application is updated with the new Image built using the tag value of the 7 first characters of the git commit sha, describe the service using the kn CLI
+    ```sh
+    kn service describe demo
+    ```
+1. Invoke your new built revision for the Knative Application
+    ```sh
+    curl http://demo.$SUB_DOMAIN
+    ```
+    It should print
+    ```
+    My First Serveless App @ OSS NA 2020  🎉 🌮 🔥 🤗!
+    ```
+
+</details>
