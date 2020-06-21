@@ -429,6 +429,17 @@ If using IBM Kubernetes FREE cluster
 
 </details>
 
+<details><summary>4.3 Verify Tekton Pipeline Install</summary>
+
+### 4.3 Verify Tekton Pipeline Install
+
+- Verify that the pods are in `Running` state in the `tekton-pipelines` namespace. If you installed the Tekton Dashboard also check that the service exist and in our case configure as `NodePort`
+    ```sh
+    kubectl get pods,svc -n tekton-pipelines
+    ```
+
+</details>
+
 </details>
 
 <details><summary>5. Using Tekton to Build and Deploy Applications</summary>
