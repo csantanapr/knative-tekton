@@ -134,11 +134,11 @@ If using IBM Kubernetes FREE cluster
       --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
     ```
 1. Verify that Knative is Installed properly all pods should be in `Running` state and our `kourier-ingress` setup.
-```
-kubectl get pods -n knative-serving
-kubectl get pods -n kourier-system
-kubectl get svc  -n kourier-system kourier-ingress
-```
+    ```sh
+    kubectl get pods -n knative-serving
+    kubectl get pods -n kourier-system
+    kubectl get svc  -n kourier-system kourier-ingress
+    ```
 
 </details>
 
