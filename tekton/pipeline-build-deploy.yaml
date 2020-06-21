@@ -9,7 +9,7 @@ spec:
     - name: revision
       default: master
     - name: image
-      default: docker.io/csantanapr/knative-tekton:latest
+      default: docker.io/csantanapr/knative-tekton
     - name: image-tag
       default: latest
     - name: CONTEXT
