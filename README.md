@@ -22,15 +22,15 @@ If using IBM Kubernetes FREE cluster
 1. Select cluster from IBM Cloud console
 1. Click the drop down Action menu on the top right and select **Connect via CLI** and follow the commands.
 1. Log in to your IBM Cloud account
-    ```sh
+    ```bash
     ibmcloud login -a cloud.ibm.com -r <REGION> -g <IAM_RESOURCE_GROUP>
     ```
 1. Set the Kubernetes context
-    ```sh
+    ```bash
     ibmcloud ks cluster config -c mycluster
     ```
 1. Verify that you can connect to your cluster.
-    ```sh
+    ```bash
     kubectl version 
     ```
     Output should show the version of Kubernetes like this:
@@ -44,12 +44,12 @@ If using IBM Kubernetes FREE cluster
 
 1. Fork this repository https://github.com/csantanapr/knative-tekton
 1. Set the environment variable `GIT_REPO_URL` to the url of your fork, not mine. And your Git username `GIT_USERNAME`
-    ```sh
+    ```bash
     GIT_REPO_URL='https://github.com/REPLACEME/knative-tekton'
     GIT_USERNAME='REPLACE_WITH_USERNAME_FOR_AUTH'
     ```
 1. Clone the repository and change directory
-    ```sh
+    ```bash
     git clone $GIT_REPO_URL
     cd knative-tekton
     ```
@@ -57,14 +57,14 @@ If using IBM Kubernetes FREE cluster
 1. Make sure that **repo** and **admin:repo_hook** are seleted 
     <!--TODO: double check what are the minimum access for this tutorial -->
 1. Set the following environment variables
-    ```sh
+    ```bash
     GIT_ACCESS_TOKEN='REPLACEME_TOKEN_VALUE'
     ```
 
 ### Setup Container Registry
 
 1. Set the environment variables `REGISTRY_SERVER`, `REGISTRY_NAMESPACE` and `REGISTRY_PASSWORD`, The `REGISTRY_NAMESPACE` most likely would be your dockerhub username. For Dockerhub use `docker.io` as the value for ` 
-    ```sh
+    ```bash
     REGISTRY_SERVER='docker.io'
     REGISTRY_NAMESPACE='REPLACEME_DOCKER_USERNAME_VALUE'
     REGISTRY_PASSWORD='REPLACEME_DOCKER_PASSWORD'
@@ -76,7 +76,7 @@ If using IBM Kubernetes FREE cluster
 ## 2. Install Knative Serving
 
 1. Install Knative Serving in namespace `knative-serving`
-    ```sh
+    ```bash
     kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml
 
     kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-core.yaml
@@ -86,21 +86,21 @@ If using IBM Kubernetes FREE cluster
     kubectl apply --filename https://github.com/knative/net-kourier/releases/download/v0.15.0/kourier.yaml
     ```
 1. Set the environment variable `EXTERNAL_IP` to External IP Address of the Worker Node
-    ```sh
+    ```bash
     EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     echo EXTERNAL_IP=$EXTERNAL_IP
     ```
 2. Set the environment variable `KNATIVE_DOMAIN` as the DNS domain using `nip.io`
-    ```sh
+    ```bash
     KNATIVE_DOMAIN="$EXTERNAL_IP.nip.io"
     echo KNATIVE_DOMAIN=$KNATIVE_DOMAIN
     ```
 1. Configure DNS for Knative Serving
-    ```sh
+    ```bash
     kubectl patch configmap -n knative-serving config-domain -p "{\"data\": {\"$KNATIVE_DOMAIN\": \"\"}}"
     ```
 1. Configure Kourier to listen on External IP
-    ```sh
+    ```bash
     cat <<EOF | kubectl apply -f -
     apiVersion: v1
     kind: Service
@@ -127,14 +127,14 @@ If using IBM Kubernetes FREE cluster
     EOF
     ```
 1. Configure Knative to use Kourier
-    ```sh
+    ```bash
     kubectl patch configmap/config-network \
       --namespace knative-serving \
       --type merge \
       --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
     ```
 1. Verify that Knative is Installed properly all pods should be in `Running` state and our `kourier-ingress` setup.
-    ```sh
+    ```bash
     kubectl get pods -n knative-serving
     kubectl get pods -n kourier-system
     kubectl get svc  -n kourier-system kourier-ingress
@@ -147,7 +147,7 @@ If using IBM Kubernetes FREE cluster
 ## 3. Using Knative to Run Serverless Applications
 
 1. Set the environment variable `SUB_DOMAIN` to the kubernetes namespace with Domain name `<namespace>.<domainname>`
-    ```sh
+    ```bash
     SUB_DOMAIN="$(kubectl config view --minify --output 'jsonpath={..namespace}').$KNATIVE_DOMAIN"
     echo SUB_DOMAIN=$SUB_DOMAIN
     ```
@@ -157,15 +157,15 @@ If using IBM Kubernetes FREE cluster
 ### 3.1 Create Knative Service
 
 1. Using the Knative CLI `kn` deploy an application usig a Container Image
-    ```sh
+    ```bash
     kn service create hello --image gcr.io/knative-samples/helloworld-go
     ```
 1. You can see list your service
-    ```sh
+    ```bash
     kn service list hello
     ```
 1. Use curl to invoke the Application
-    ```sh
+    ```bash
     curl hello.$SUB_DOMAIN
     ```
     It should print
@@ -202,11 +202,11 @@ If using IBM Kubernetes FREE cluster
 ### 3.2 Updating the Knative service 
 
 1. Update the service hello with a new environment variable `TARGET`
-    ```sh
+    ```bash
     kn service update hello --env TARGET="World from v1" 
     ```
 1. Now invoke the service
-    ```sh
+    ```bash
     curl hello.$SUB_DOMAIN
     ```
     It should print
@@ -221,14 +221,14 @@ If using IBM Kubernetes FREE cluster
 ### 3.3 Knative Service Traffic Splitting
 
 1. Update the service hello by updating the environment variable `TARGET`, tag the previous version `v1`, send 25% traffic to this new version and leaving 75% of the traffic to `v1`
-    ```sh
+    ```bash
     kn service update hello \
      --env TARGET="Knative from v2" \
      --tag $(kubectl get ksvc hello --template='{{.status.latestReadyRevisionName}}')=v1 \
      --traffic v1=75,@latest=25
     ```
 1. Describe the service to see the traffic split details
-    ```sh
+    ```bash
     kn service describe  hello
     ```
     Should print this
@@ -251,7 +251,7 @@ If using IBM Kubernetes FREE cluster
       ++ RoutesReady            21s 
     ```
 1. Invoke the service usign a while loop you will see the message `Hello Knative from v2` 25% of the time
-    ```sh
+    ```bash
     while true; do
     curl hello.$SUB_DOMAIN 
     done
@@ -264,7 +264,7 @@ If using IBM Kubernetes FREE cluster
     Hello World from v1!
     ```
 1. Update the service this time dark launch new version `v3` on a specific url, zero traffic will go to this version from the main url of the service
-    ```sh
+    ```bash
     kn service update hello \
         --env TARGET="OSS NA 2020 from v3" \
         --tag $(kubectl get ksvc hello --template='{{.status.latestReadyRevisionName}}')=v2 \
@@ -272,7 +272,7 @@ If using IBM Kubernetes FREE cluster
         --traffic v1=75,v2=25,@latest=0
     ```
 1. The latest version of the service is only available url prefix `v3-`, go ahead and invoke the latest directly.
-    ```sh
+    ```bash
     curl v3-hello.$SUB_DOMAIN
     ```
     It shoud print this
@@ -280,11 +280,11 @@ If using IBM Kubernetes FREE cluster
     Hello OSS NA from v3!
     ```
 1. We are happy with our secret new version of the application, latest make it live to 100% of the user on the default url
-    ```sh
+    ```bash
     kn service update hello --traffic @latest=100
     ```
 1. If we invoke the service in a loop you will see that 100% of the traffic is directed to version `v3` of our application
-    ```sh
+    ```bash
     while true; do
     curl hello.$SUB_DOMAIN 
     done
@@ -297,7 +297,7 @@ If using IBM Kubernetes FREE cluster
     Hello OSS NA 2020 from v3!
     ```
 1. By using tags the custom urls with tag prefix are still available, in case you want to access an old revision of the application
-    ```sh
+    ```bash
     curl v1-hello.$SUB_DOMAIN 
     curl v2-hello.$SUB_DOMAIN 
     curl v3-hello.$SUB_DOMAIN 
@@ -373,20 +373,20 @@ If using IBM Kubernetes FREE cluster
     </details>
 
     If you want to deploy usign YAML, delete the Application with `kn` and redeploy with `kubectl`
-    ```sh
+    ```bash
     kn service delete hello
     kubectl apply -f knative/v1.yaml
     kubectl apply -f knative/v2.yaml
     kubectl apply -f knative/v3.yaml
     ```
     Try the service again
-    ```sh
+    ```bash
     while true; do
     curl hello.$SUB_DOMAIN 
     done
     ```
 1. Delete the Application and all it's revisions
-    ```sh
+    ```bash
     kn service delete hello
     ```
 
@@ -401,7 +401,7 @@ If using IBM Kubernetes FREE cluster
 <details><summary>4.1 Install Tekton Pipelines</summary>
 
 - Install Tekton Pipelines in namespace `tekton-pipelines`
-    ```sh
+    ```bash
     kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.13.2/release.yaml
     ```
 
@@ -412,15 +412,15 @@ If using IBM Kubernetes FREE cluster
 ### 4.2 Install Tekton Dashboard (Optional)
 
 1. Install Tekton Dashboard in namespace `tekton-pipelines`
-    ```sh
+    ```bash
     kubectl apply --filename https://github.com/tektoncd/dashboard/releases/download/v0.7.0/tekton-dashboard-release.yaml
     ```
 1. To access the dashboard you can configure a service with `NodePort`
-    ```sh
+    ```bash
     kubectl expose service tekton-dashboard --name tekton-dashboard-ingress --type=NodePort -n tekton-pipelines
     ```
 1. Set an environment variable `TEKTON_DASHBOARD_URL` with the url to access the Dashboard
-    ```sh
+    ```bash
     EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     TEKTON_DASHBOARD_NODEPORT=$(kubectl get svc tekton-dashboard-ingress -n tekton-pipelines -o jsonpath='{.spec.ports[0].nodePort}')
     TEKTON_DASHBOARD_URL=http://$EXTERNAL_IP:$TEKTON_DASHBOARD_NODEPORT
@@ -434,7 +434,7 @@ If using IBM Kubernetes FREE cluster
 ### 4.3 Verify Tekton Pipeline Install
 
 - Verify that the pods are in `Running` state in the `tekton-pipelines` namespace. If you installed the Tekton Dashboard also check that the service exist and in our case configure as `NodePort`
-    ```sh
+    ```bash
     kubectl get pods,svc -n tekton-pipelines
     ```
 
@@ -453,7 +453,7 @@ If using IBM Kubernetes FREE cluster
 ### 5.1 Configure Access for Tekton
 
 1. We need to package our application in a Container Image and store this Image in a Container Registry. Since we are going to need to create secrets with the registry credentials we are going to create a ServiceAccount `pipelines` with the associated secret `regcred`. Make sure you setup your container credentials as environment variables. Checkout the [Setup Container Registry](#setup-container-registry) in the Setup Environment section on this tutorial. This commands will print your credentials make sure no one is looking over, the printed command is what you need to run.
-    ```sh
+    ```bash
     echo kubectl create secret docker-registry regcred \
       --docker-server=\'${REGISTRY_SERVER}\' \
       --docker-username=\'${REGISTRY_NAMESPACE}\' \
@@ -471,11 +471,11 @@ If using IBM Kubernetes FREE cluster
       - name: regcred
     ```
     Run the following command with the provided `YAML`
-    ```sh
+    ```bash
     kubectl apply -f tekton/sa.yaml
     ```
 1. We are going to be using Tekton to deploy the Knative Service, we need to configure RBAC to provide edit access to the current namespace `default` to the ServiceAccount `pipeline` if you are using a different namespace than `default` edit the file `tekton/rbac.yaml` and provide the namespace where to create the `Role` and the `RoleBinding` fo more info check out the [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) docs. Run the following command to grant access to sa `pipelines`
-    ```sh
+    ```bash
     kubectl apply -f tekton/rbac.yaml
     ```
 
@@ -566,19 +566,19 @@ If using IBM Kubernetes FREE cluster
     ```
     </details>
 
-    ```sh
+    ```bash
     kubectl apply -f tekton/task-build.yaml
     ```
 1. You can list the task that we just created using the `tkn` CLI
-    ```sh
+    ```bash
     tkn task ls
     ```
 1. We can also get more details about the _build_ **Task** using `tkn task describe`
-    ```
+    ```bash
     tkn task describe build
     ```
 1. Let's use the Tekton CLI to test our _build_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application in our case is `nodejs`. The repository image name is `knative-tekton`
-    ```sh
+    ```bash
     tkn task start build --showlog \
       -p repo-url=${GIT_REPO_URL} \
       -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
@@ -586,7 +586,7 @@ If using IBM Kubernetes FREE cluster
       -s pipeline 
     ```
 1. You can check out the container registry and see that the image was pushed to repository a minute ago, it should return status Code `200`
-    ```sh
+    ```bash
     curl -s -o /dev/null -w "%{http_code}\n" https://index.$REGISTRY_SERVER/v1/repositories/$REGISTRY_NAMESPACE/knative-tekton/tags/latest
     ```
 </details>
@@ -655,15 +655,15 @@ If using IBM Kubernetes FREE cluster
 
     </details>
 
-    ```sh
+    ```bash
     kubectl apply -f tekton/task-deploy.yaml
     ```
 1. You can list the task that we just created using the `tkn` CLI
-    ```sh
+    ```bash
     tkn task ls
     ```
 1. We can also get more details about the _deploy_ **Task** using `tkn task describe`
-    ```
+    ```bash
     tkn task describe deploy
     ```
 1. I provided a Task YAML that defines our Knative Application in [knative/service.yaml](./knative/service.yaml)
@@ -683,7 +683,7 @@ If using IBM Kubernetes FREE cluster
                   value: Welcome to OSS NA 2020 !
     ```
 1. Let's use the Tekton CLI to test our _deploy_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application yaml manifest is located and the file name in our case is `knative` and `service.yaml` .
-    ```sh
+    ```bash
     tkn task start deploy --showlog \
       -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
       -p repo-url=${GIT_REPO_URL} \
@@ -692,7 +692,7 @@ If using IBM Kubernetes FREE cluster
       -s pipeline 
     ```
 1. You can check out that the Knative Application was deploy
-    ```sh
+    ```bash
     kn service list demo
     ```
 
@@ -753,34 +753,34 @@ If using IBM Kubernetes FREE cluster
     ```
     </details>
 
-    ```sh
+    ```bash
     kubectl apply -f tekton/pipeline-build-deploy.yaml
     ```
 1. You can list the pipeline that we just created using the `tkn` CLI
-    ```sh
+    ```bash
     tkn pipeline ls
     ```
 1. We can also get more details about the _build-deploy_ **Pipeline** using `tkn pipeline describe`
-    ```
+    ```bash
     tkn pipeline describe build-deploy
     ```
 1. Let's use the Tekton CLI to test our _build-deploy_ **Pipeline** you need to pass the ServiceAccount `pipeline` to be use to run the Tasks. You will need to pass the GitHub URL to your fork or use this repository. You will also pass the Image location where to push in the the registry and where Kubernetes should pull the image for the Knative Application. The directory and filename for the Kantive yaml are already specified in the Pipeline definition.
-    ```sh
+    ```bash
     tkn pipeline start build-deploy --showlog \
       -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
       -p repo-url=${GIT_REPO_URL} \
       -s pipeline 
     ```
 1. You can inpect the results and duration by describing the last **PipelineRun**
-    ```sh
+    ```bash
     tkn pipelinerun describe --last
     ```
 1. Check that the latest Knative Application revision is ready
-    ```sh
+    ```bash
     kn service list demo
     ```
 1. Run the Application using the url
-    ```sh
+    ```bash
     curl http://demo.$SUB_DOMAIN
     ```
     It shoudl print
@@ -802,7 +802,7 @@ If using IBM Kubernetes FREE cluster
 ### 6.1 Install Tekton Triggers
 
 1. Install Tekton Triggers in namespace `tekton-pipelines`
-    ```sh
+    ```bash
     kubectl apply --filename  https://storage.googleapis.com/tekton-releases/triggers/previous/v0.5.0/release.yaml
     ``` 
 
@@ -848,7 +848,7 @@ If using IBM Kubernetes FREE cluster
 
     </details>
 
-    ```sh
+    ```bash
     kubectl apply -f tekton/trigger-template.yaml
     ```
 1. When the Webhook invokes we want to extract information from the Web Hook http request sent by the Git Server, we will use a `TriggerBinding` this information is what gets passed to the `TriggerTemplate`.
@@ -871,7 +871,7 @@ If using IBM Kubernetes FREE cluster
 
     </details>
 
-    ```sh
+    ```bash
     kubectl apply -f tekton/trigger-binding.yaml
     ```
 
@@ -907,11 +907,11 @@ If using IBM Kubernetes FREE cluster
 
     </details>
 
-    ```sh
+    ```bash
     kubectl apply -f tekton/trigger-listener.yaml
     ```
 1. The Eventlister creates a deployment and a service you can list both using this command
-    ```sh
+    ```bash
     kubectl get deployments,eventlistener,svc -l eventlistener=cicd
     ```
 
@@ -924,11 +924,11 @@ If using IBM Kubernetes FREE cluster
 - It will depend on your cluster and how traffic is configured into your Kubernetes Cluster, you would need to configure an Application Load Balancer (ALB), Ingress, or in case of OpenShift a Route. If you are running the Kubernetes cluster on your local workstation using something minikube, kind, docker-desktop, or k3s then you I recommend a Cloud Native Tunnel solution like [inlets](https://docs.inlets.dev/#/) a by the open source contributor [Alex Ellis](https://twitter.com/alexellisuk) 
 
 1. Expose the EventListener as `NodePort`
-    ```sh
+    ```bash
     kubectl expose service el-cicd --name el-cicd-ingress --type=NodePort
     ```
 1. Get the url using the external IP of the worker node and the `NodePort` assign. Set an environment variable `GIT_WEBHOOK_URL`
-    ```sh
+    ```bash
     EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     GIT_WEBHOOK_NODEPORT=$(kubectl get svc el-cicd-ingress -o jsonpath='{.spec.ports[0].nodePort}')
     GIT_WEBHOOK_URL=http://$EXTERNAL_IP:$GIT_WEBHOOK_NODEPORT
@@ -943,26 +943,26 @@ If using IBM Kubernetes FREE cluster
     1. Select Content type **application/json**
     1. Click **Add webhook**
 1. (Optional) Another option instead of doing it manually you can use the following to create the git webhook programatically
-    ```sh
+    ```bash
     curl -v -X POST -u $GIT_USERNAME:$GIT_ACCESS_TOKEN \
     -d "{\"name\": \"web\",\"active\": true,\"events\": [\"push\"],\"config\": {\"url\": \"$GIT_WEBHOOK_URL\",\"content_type\": \"json\",\"insecure_ssl\": \"1\"}}" \
     -L https://api.github.com/repos/$GIT_USERNAME/knative-tekton/hooks
     ```
 1. Now make a change to application manifest such like changing the message in [knative/service.yaml](./knative/service.yaml) to something like `My First Serveless App @ OSS NA 2020  🎉 🌮 🔥 🤗!` and push the change to the default branch
 1. A new Tekton **PipelineRun** gets created starting a new **Pipeline** Instance. You can check in the Tekton Dashboard for progress of use the tkn CLI
-    ```sh
+    ```bash
     tkn pipeline logs -f --last
     ```
 1. To see the details of the execution of the PipelineRun use the tkn CLI
-    ```sh
+    ```bash
     tkn pipelinerun describe --last
     ```
 1. The Knative Application Application is updated with the new Image built using the tag value of the 7 first characters of the git commit sha, describe the service using the kn CLI
-    ```sh
+    ```bash
     kn service describe demo
     ```
 1. Invoke your new built revision for the Knative Application
-    ```sh
+    ```bash
     curl http://demo.$SUB_DOMAIN
     ```
     It should print
