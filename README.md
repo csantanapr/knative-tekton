@@ -402,7 +402,7 @@ If using IBM Kubernetes FREE cluster
 
 <details><summary>5.1 Configure Access for Tekton</summary>
 
-### 5.1 Configure Access for Tekto
+### 5.1 Configure Access for Tekton
 
 1. In this repository we have a sample application, you can see the source code in [src/app.js](./src//app.js) This application is using JavaScript to implement a web server, but you can use any language you want.
     ```javascript
