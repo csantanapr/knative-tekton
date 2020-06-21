@@ -608,3 +608,10 @@ If using IBM Kubernetes FREE cluster
     echo GIT_WEBHOOK_URL=$GIT_WEBHOOK_URL
     ```
     **WARNING:** Take into account that this URL is insecure is using http and not https, this means you should not use this type of URL for real work environments, In that case you would need to expose the service for the eventlistener using a secure connection using *https** 
+1. Add the Git Web Hook url to your Git repository
+    1. Open Settings in your Github repository
+    1. Click **Webhooks**
+    1. Click **Add webhook**
+    1. Copy and paste the `$GIT_WEBHOOK_URL` value into the **Payload URL**
+    1. Select Content type **application/json**
+    1. Click **Add webhook**
