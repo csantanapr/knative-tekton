@@ -595,9 +595,76 @@ If using IBM Kubernetes FREE cluster
 
 ### 5.3 The Deploy Tekton Task
 
-1. I provided a Tekton Task that can run `kubectl` to deploy the Knative Application using a YAML manifest. Install the task _deploy_ like this
+1. I provided a Deploy Tekton Task that can run `kubectl` to deploy the Knative Application using a YAML manifest. Install the task _deploy_ like this.
+    <details><summary>Show me the Build Task YAML</summary>
+
+    ```yaml
+    apiVersion: tekton.dev/v1beta1
+    kind: Task
+    metadata:
+    name: deploy
+    spec:
+    params:
+        - name: repo-url
+        description: The git repository url
+        - name: revision
+        description: The branch, tag, or git reference from the git repo-url location
+        default: master
+        - name: dir
+        description: Path to the directory to use as context.
+        default: .
+        - name: yaml
+        description: Path to the directory to use as context.
+        default: ""
+        - name: image
+        description: Path to the container image
+        default: ""
+        - name: KUBECTL_IMAGE
+        description: The location of the kubectl image.
+        default: docker.io/csantanapr/kubectl
+
+    steps:
+        - name: git-clone
+        image: alpine/git
+        script: |
+            git clone $(params.repo-url) /source
+            cd /source
+            git checkout $(params.revision)
+        volumeMounts:
+            - name: source
+            mountPath: /source
+        - name: kubectl-apply
+        image: $(params.KUBECTL_IMAGE)
+        workingdir: /source
+        script: |
+
+            if [ "$(params.image)" != "" ] && [ "$(params.yaml)" != "" ]; then
+            yq w -i $(params.dir)/$(params.yaml) "spec.template.spec.containers[0].image" "$(params.image)"
+            cat $(params.dir)/$(params.yaml)
+            fi
+
+            kubectl apply -f $(params.dir)/$(params.yaml)
+
+        volumeMounts:
+            - name: source
+            mountPath: /source
+    volumes:
+        - name: source
+        emptyDir: {}
+    ```
+
+    </details>
+
     ```sh
     kubectl apply -f tekton/task-deploy.yaml
+    ```
+1. You can list the task that we just created using the `tkn` CLI
+    ```sh
+    tkn task ls
+    ```
+1. We can also get more details about the _deploy_ **Task** using `tkn task describe`
+    ```
+    tkn task describe deploy
     ```
 1. I provided a Task YAML that defines our Knative Application in [knative/service.yaml](./knative/service.yaml)
     ```yaml
@@ -612,7 +679,7 @@ If using IBM Kubernetes FREE cluster
             - image: docker.io/csantanapr/knative-tekton
               imagePullPolicy: Always
               env:
-                - name: MESSAGE
+                - name: TARGET
                   value: Welcome to OSS NA 2020 !
     ```
 1. Let's use the Tekton CLI to test our _deploy_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application yaml manifest is located and the file name in our case is `knative` and `service.yaml` .
