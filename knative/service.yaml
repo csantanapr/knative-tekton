@@ -10,4 +10,4 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MESSAGE
-              value: My First Serveless App @ OSS NA 2020  🎉 🌮 🔥 🤗!
+              value: Welcome to OSS NA 2020  🎉 🌮 🔥 🤗!
