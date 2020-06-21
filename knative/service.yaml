@@ -9,5 +9,5 @@ spec:
         - image: docker.io/csantanapr/knative-tekton
           imagePullPolicy: Always
           env:
-            - name: MESSAGE
+            - name: TARGET
               value: Welcome to OSS NA 2020  🎉 🌮 🔥 🤗!
