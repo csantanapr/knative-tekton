@@ -596,7 +596,7 @@ If using IBM Kubernetes FREE cluster
 ### 5.3 The Deploy Tekton Task
 
 1. I provided a Deploy Tekton Task that can run `kubectl` to deploy the Knative Application using a YAML manifest. Install the task _deploy_ like this.
-    <details><summary>Show me the Build Task YAML</summary>
+    <details><summary>Show me the Deploy Task YAML</summary>
 
     ```yaml
     apiVersion: tekton.dev/v1beta1
@@ -702,7 +702,11 @@ If using IBM Kubernetes FREE cluster
 
 ### 5.4 The Build and Deploy Pipeline
 
-1. If we want to build the application image and then deploy the application, we can run the Tasks **build** and **deploy** by defining a **Pipeline** that contains the two Tasks, deploy the Pipeline `build-deploy`
+1. If we want to build the application image and then deploy the application, we can run the Tasks **build** and **deploy** by defining a **Pipeline** that contains the two Tasks, deploy the Pipeline `build-deploy`.
+    <details><summary>Show me the Pipeline YAML</summary>
+
+    </details>
+
     ```sh
     kubectl apply -f tekton/pipeline-build-deploy.yaml
     ```
