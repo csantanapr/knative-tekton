@@ -4,21 +4,12 @@
 
 ## 1. Setup Environment
 
-### Tools
-- Kubernetes Cluster
-    - Get a free Kubernetes cluster on [IBM Cloud](https://cloud.ibm.com), also check out the booth at OSS-NA IBM booth during the conference how to get $200 credit.
-    - You can use other kubernetes cluster like [minikube](https://minikube.sigs.k8s.io) or [kind](https://kind.sigs.k8s.io/)
-- [Kubernetes CLI]() `kubectl`
-- [Knative CLI](https://knative.dev/docs/install/install-kn/) `kn`
-- [Tekton CLI](https://github.com/tektoncd/cli#installing-tkn) `tkn`
+<details><summary>1.1 Setup Kubernetes Clusters</summary>
 
-### Accounts
-- [GitHub](https://github.com/)
-- [Dockerhub](https://hub.docker.com/)
+<details><summary>1.1.1 IBM Free Kubernetes Cluster</summary>
 
-### Setup kubectl access
+- Get a free Kubernetes cluster on [IBM Cloud](https://cloud.ibm.com), also check out the booth at OSS-NA IBM booth during the conference how to get $200 credit.
 
-If using IBM Kubernetes FREE cluster
 1. Select cluster from IBM Cloud console
 1. Click the drop down Action menu on the top right and select **Connect via CLI** and follow the commands.
 1. Log in to your IBM Cloud account
@@ -40,6 +31,36 @@ If using IBM Kubernetes FREE cluster
     Server Version: v1.18.3+IKS
     ```
 
+</details>
+
+<details><summary>1.1.2 Kubernetes with Minikube</summary>
+
+- You can use other kubernetes cluster like [minikube](https://minikube.sigs.k8s.io)
+
+</details>
+
+<details><summary>1.1.3 Kubernetes with Katacoda</summary>
+
+- TODO: Add final link to scenario
+
+</details>
+
+    
+
+</details>
+
+### CLI Tools
+- [Kubernetes CLI]() `kubectl`
+- [Knative CLI](https://knative.dev/docs/install/install-kn/) `kn`
+- [Tekton CLI](https://github.com/tektoncd/cli#installing-tkn) `tkn`
+
+### Accounts
+- [GitHub](https://github.com/)
+- [Dockerhub](https://hub.docker.com/)
+
+
+<details><summary>Setup Git Acess Token (Optional)</summary>
+
 ### Setup Git
 
 1. Fork this repository https://github.com/csantanapr/knative-tekton
@@ -60,15 +81,19 @@ If using IBM Kubernetes FREE cluster
     ```bash
     GIT_ACCESS_TOKEN='REPLACEME_TOKEN_VALUE'
     ```
+</details>
 
-### Setup Container Registry
+<details><summary>Setup Container Registry Acess</summary>
 
-1. Set the environment variables `REGISTRY_SERVER`, `REGISTRY_NAMESPACE` and `REGISTRY_PASSWORD`, The `REGISTRY_NAMESPACE` most likely would be your dockerhub username. For Dockerhub use `docker.io` as the value for ` 
+- Set the environment variables `REGISTRY_SERVER`, `REGISTRY_NAMESPACE` and `REGISTRY_PASSWORD`, The `REGISTRY_NAMESPACE` most likely would be your dockerhub username. For Dockerhub use `docker.io` as the value for ` 
     ```bash
     REGISTRY_SERVER='docker.io'
     REGISTRY_NAMESPACE='REPLACEME_DOCKER_USERNAME_VALUE'
     REGISTRY_PASSWORD='REPLACEME_DOCKER_PASSWORD'
     ```
+
+</details>
+
 </details>
 
 <details><summary>2. Install Knative Serving</summary>
@@ -785,7 +810,7 @@ If using IBM Kubernetes FREE cluster
     ```
     It shoudl print
     ```
-    Welcome to OSS NA 2020  🎉 🌮 🔥 🤗!
+    Welcome to OSS NA 2020 
     ```
 </details>
 
