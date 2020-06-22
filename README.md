@@ -705,7 +705,7 @@
               imagePullPolicy: Always
               env:
                 - name: TARGET
-                  value: Welcome to OSS NA 2020 !
+                  value: Welcome to OSS NA 2020
     ```
 1. Let's use the Tekton CLI to test our _deploy_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application yaml manifest is located and the file name in our case is `knative` and `service.yaml` .
     ```bash
