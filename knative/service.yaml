@@ -10,4 +10,4 @@ spec:
           imagePullPolicy: Always
           env:
             - name: TARGET
-              value: Welcome to OSS NA 2020
+              value: My First Serveless App @ OSS NA 2020 🎉 🌮 🔥 🤗!
