@@ -129,7 +129,7 @@
     ```bash
     kubectl patch configmap -n knative-serving config-domain -p "{\"data\": {\"$KNATIVE_DOMAIN\": \"\"}}"
     ```
-1. Configure Kourier to listen on External IP
+1. Configure Kourier to listen for http port 80 on the External IP
     ```bash
     cat <<EOF | kubectl apply -f -
     apiVersion: v1
@@ -140,18 +140,13 @@
       labels:
         networking.knative.dev/ingress-provider: kourier
     spec:
-      ports:
-      - name: http2
-        port: 80
-        protocol: TCP
-        targetPort: 8080
-      - name: https
-        port: 443
-        protocol: TCP
-        targetPort: 8443
       selector:
         app: 3scale-kourier-gateway
-      type: NodePort
+      ports:
+        - name: http2
+          port: 80
+          protocol: TCP
+          targetPort: 8080
       externalIPs:
         - $EXTERNAL_IP
     EOF
@@ -163,7 +158,7 @@
       --type merge \
       --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
     ```
-1. Verify that Knative is Installed properly all pods should be in `Running` state and our `kourier-ingress` setup.
+1. Verify that Knative is Installed properly all pods should be in `Running` state and our `kourier-ingress` service configured.
     ```bash
     kubectl get pods -n knative-serving
     kubectl get pods -n kourier-system
@@ -176,9 +171,12 @@
 
 ## 3. Using Knative to Run Serverless Applications
 
-1. Set the environment variable `SUB_DOMAIN` to the kubernetes namespace with Domain name `<namespace>.<domainname>`
+1. Set the environment variable `SUB_DOMAIN` to the kubernetes namespace with Domain name `<namespace>.<domainname>` this way we can use any kubernetes namespace other than `default`
     ```bash
-    SUB_DOMAIN="$(kubectl config view --minify --output 'jsonpath={..namespace}').$KNATIVE_DOMAIN"
+    CURRENT_CTX=$(kubectl config current-context)
+    CURRENT_NS=$(kubectl config view -o=jsonpath="{.contexts[?(@.name==\"${CURRENT_CTX}\")].context.namespace}")
+    if [[ -z "${ns}" ]]; then CURRENT_NS="default" fi
+    SUB_DOMAIN="$CURRENT_NS.$KNATIVE_DOMAIN"
     echo SUB_DOMAIN=$SUB_DOMAIN
     ```
 
@@ -207,7 +205,7 @@
     kubectl get pod -l serving.knative.dev/service=hello -w
     ```
 
-    Output should look like this:
+    Output should look like this after a few seconds when http traffic stops:
     ```
     NAME                                     READY   STATUS
     hello-r4vz7-deployment-c5d4b88f7-ks95l   2/2     Running
@@ -301,7 +299,21 @@
         --tag @latest=v3 \
         --traffic v1=75,v2=25,@latest=0
     ```
-1. The latest version of the service is only available url prefix `v3-`, go ahead and invoke the latest directly.
+1. Describe the service to see the traffic split details, `v3` doesn't get any traffic
+    ```bash
+    kn service describe  hello
+    ```
+    Should print this
+    ```
+    Revisions:  
+        +  @latest (hello-wkyty-4) #v3 [4] (1m)
+            Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
+    25%  hello-fbzqf-3 #v2 [3] (6m)
+            Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
+    75%  hello-kcspq-2 #v1 [2] (7m)
+            Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
+    ```
+1. The latest version of the service is only available with an url prefix `v3-`, go ahead and invoke the latest directly.
     ```bash
     curl v3-hello.$SUB_DOMAIN
     ```
@@ -309,9 +321,23 @@
     ```
     Hello OSS NA from v3!
     ```
-1. We are happy with our secret new version of the application, latest make it live to 100% of the user on the default url
+1. We are happy with our darked launch version of the application, lets turn it live to 100% of the users on the default url
     ```bash
     kn service update hello --traffic @latest=100
+    ```
+1. Describe the service to see the traffic split details, `@latest` now gets 100% of the traffic
+    ```bash
+    kn service describe  hello
+    ```
+    Should print this
+    ```
+    Revisions:  
+    100%  @latest (hello-wkyty-4) #v3 [4] (4m)
+            Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
+        +  hello-fbzqf-3 #v2 [3] (8m)
+            Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
+        +  hello-kcspq-2 #v1 [2] (9m)
+            Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
     ```
 1. If we invoke the service in a loop you will see that 100% of the traffic is directed to version `v3` of our application
     ```bash
@@ -451,7 +477,7 @@
     ```
 1. Set an environment variable `TEKTON_DASHBOARD_URL` with the url to access the Dashboard
     ```bash
-    EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    EXTERNAL_IP=$(minkube ip || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     TEKTON_DASHBOARD_NODEPORT=$(kubectl get svc tekton-dashboard-ingress -n tekton-pipelines -o jsonpath='{.spec.ports[0].nodePort}')
     TEKTON_DASHBOARD_URL=http://$EXTERNAL_IP:$TEKTON_DASHBOARD_NODEPORT
     echo TEKTON_DASHBOARD_URL=$TEKTON_DASHBOARD_URL
@@ -959,7 +985,7 @@
     ```
 1. Get the url using the external IP of the worker node and the `NodePort` assign. Set an environment variable `GIT_WEBHOOK_URL`
     ```bash
-    EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    EXTERNAL_IP=$(minkube ip || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     GIT_WEBHOOK_NODEPORT=$(kubectl get svc el-cicd-ingress -o jsonpath='{.spec.ports[0].nodePort}')
     GIT_WEBHOOK_URL=http://$EXTERNAL_IP:$GIT_WEBHOOK_NODEPORT
     echo GIT_WEBHOOK_URL=$GIT_WEBHOOK_URL
