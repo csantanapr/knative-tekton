@@ -2,6 +2,8 @@
 
 <details><summary>1. Setup Environment</summary>
 
+## Setup Environment
+
 <details><summary>1.1 Setup Kubernetes Clusters</summary>
 
 <details><summary>1.1.1 IBM Free Kubernetes Cluster</summary>
@@ -32,7 +34,25 @@
 
 <details><summary>1.1.2 Kubernetes with Minikube</summary>
 
-- Follow the lab [docs/minikube](./docs/minikube.md)
+1. Install [minikube](https://minikube.sigs.k8s.io) Linux, MacOS, Windows. This tutorial was tested with version `v1.11.0`. You can verify version with
+    ```
+    minkube update-check
+    ```
+1. Configure your cluster 2 CPUs, 2 GB Memory, and version of kubernetes `v1.18.5`. If you already have a minikube with different config, you need to delete it for new configuration to take effect or create a new profile.
+    ```
+    minikube delete
+    minikube config set cpus 2
+    minikube config set memory 2048
+    minikube config set kubernetes-version v1.18.5
+    ```
+1. Start your minikube cluster
+    ```
+    minikube start
+    ```
+1. Verify versions if the `kubectl`, the cluster, and that you can connect to your cluster.
+    ```bash
+    kubectl version --short
+    ```
 
 </details>
 
@@ -83,7 +103,7 @@
 
 <details><summary>2. Install Knative Serving</summary>
 
-## 2. Install Knative Serving
+### 2. Install Knative Serving
 
 1. Install Knative Serving in namespace `knative-serving`
     ```bash
@@ -97,7 +117,7 @@
     ```
 1. Set the environment variable `EXTERNAL_IP` to External IP Address of the Worker Node
     ```bash
-    EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    EXTERNAL_IP=$(minkube ip || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     echo EXTERNAL_IP=$EXTERNAL_IP
     ```
 2. Set the environment variable `KNATIVE_DOMAIN` as the DNS domain using `nip.io`
