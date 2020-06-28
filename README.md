@@ -199,7 +199,7 @@
     ```
 1. Use curl to invoke the Application
     ```bash
-    curl hello.$SUB_DOMAIN
+    curl http://hello.$SUB_DOMAIN
     ```
     It should print
     ```
@@ -240,7 +240,7 @@
     ```
 1. Now invoke the service
     ```bash
-    curl hello.$SUB_DOMAIN
+    curl http://hello.$SUB_DOMAIN
     ```
     It should print
     ```
@@ -286,7 +286,7 @@
 1. Invoke the service usign a while loop you will see the message `Hello Knative from v2` 25% of the time
     ```bash
     while true; do
-    curl hello.$SUB_DOMAIN 
+    curl http://hello.$SUB_DOMAIN 
     done
     ```
     Should print this
@@ -320,7 +320,7 @@
     ```
 1. The latest version of the service is only available with an url prefix `v3-`, go ahead and invoke the latest directly.
     ```bash
-    curl v3-hello.$SUB_DOMAIN
+    curl http://v3-hello.$SUB_DOMAIN
     ```
     It shoud print this
     ```
@@ -347,7 +347,7 @@
 1. If we invoke the service in a loop you will see that 100% of the traffic is directed to version `v3` of our application
     ```bash
     while true; do
-    curl hello.$SUB_DOMAIN 
+    curl http://hello.$SUB_DOMAIN 
     done
     ```
     Should print this
@@ -359,9 +359,9 @@
     ```
 1. By using tags the custom urls with tag prefix are still available, in case you want to access an old revision of the application
     ```bash
-    curl v1-hello.$SUB_DOMAIN 
-    curl v2-hello.$SUB_DOMAIN 
-    curl v3-hello.$SUB_DOMAIN 
+    curl http://v1-hello.$SUB_DOMAIN 
+    curl http://v2-hello.$SUB_DOMAIN 
+    curl http://v3-hello.$SUB_DOMAIN 
     ```
     It should print
     ```
@@ -443,7 +443,7 @@
     Try the service again
     ```bash
     while true; do
-    curl hello.$SUB_DOMAIN 
+    curl http://hello.$SUB_DOMAIN 
     done
     ```
 1. Delete the Application and all it's revisions
