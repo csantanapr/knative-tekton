@@ -662,7 +662,7 @@
 
 ### 5.3 The Deploy Tekton Task
 
-1. I provided a Deploy Tekton Task that can run `kubectl` to deploy the Knative Application using a YAML manifest. Install the task _deploy_ like this.
+1. I provided a Deploy Tekton Task that can run `kubectl` to deploy the Knative Application using a YAML manifest.
     <details><summary>Show me the Deploy Task YAML</summary>
 
     ```yaml
@@ -722,6 +722,7 @@
 
     </details>
 
+1. Install the provided task _deploy_ like this.
     ```bash
     kubectl apply -f tekton/task-deploy.yaml
     ```
