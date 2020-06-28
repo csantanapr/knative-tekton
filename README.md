@@ -2,8 +2,6 @@
 
 <details><summary>1. Setup Environment</summary>
 
-## 1. Setup Environment
-
 <details><summary>1.1 Setup Kubernetes Clusters</summary>
 
 <details><summary>1.1.1 IBM Free Kubernetes Cluster</summary>
@@ -22,11 +20,10 @@
     ```
 1. Verify that you can connect to your cluster.
     ```bash
-    kubectl version 
+    kubectl version --short
     ```
     Output should show the version of Kubernetes like this:
     ```
-    kubectl version --short
     Client Version: v1.18.3
     Server Version: v1.18.3+IKS
     ```
@@ -35,7 +32,7 @@
 
 <details><summary>1.1.2 Kubernetes with Minikube</summary>
 
-- You can use other kubernetes cluster like [minikube](https://minikube.sigs.k8s.io)
+- Follow the lab [docs/minikube](./docs/minikube.md)
 
 </details>
 
@@ -45,47 +42,21 @@
 
 </details>
 
-    
-
 </details>
 
-### CLI Tools
-- [Kubernetes CLI]() `kubectl`
+<details><summary>1.2 Setup Command Line Interface (CLI) Tools</summary>
+
+- [Kubernetes CLI](https://kubernetes.io/docs/tasks/tools/install-kubectl) `kubectl`
 - [Knative CLI](https://knative.dev/docs/install/install-kn/) `kn`
 - [Tekton CLI](https://github.com/tektoncd/cli#installing-tkn) `tkn`
 
-### Accounts
-- [GitHub](https://github.com/)
-- [Dockerhub](https://hub.docker.com/)
-
-
-<details><summary>Setup Git Acess Token (Optional)</summary>
-
-### Setup Git
-
-1. Fork this repository https://github.com/csantanapr/knative-tekton
-1. Set the environment variable `GIT_REPO_URL` to the url of your fork, not mine. And your Git username `GIT_USERNAME`
-    ```bash
-    GIT_REPO_URL='https://github.com/REPLACEME/knative-tekton'
-    GIT_USERNAME='REPLACE_WITH_USERNAME_FOR_AUTH'
-    ```
-1. Clone the repository and change directory
-    ```bash
-    git clone $GIT_REPO_URL
-    cd knative-tekton
-    ```
-1. Generate [GitHub new token](https://github.com/settings/tokens). 
-1. Make sure that **repo** and **admin:repo_hook** are seleted 
-    <!--TODO: double check what are the minimum access for this tutorial -->
-1. Set the following environment variables
-    ```bash
-    GIT_ACCESS_TOKEN='REPLACEME_TOKEN_VALUE'
-    ```
 </details>
 
-<details><summary>Setup Container Registry Acess</summary>
+<details><summary>1.3 Setup Container Registry</summary>
 
-- Set the environment variables `REGISTRY_SERVER`, `REGISTRY_NAMESPACE` and `REGISTRY_PASSWORD`, The `REGISTRY_NAMESPACE` most likely would be your dockerhub username. For Dockerhub use `docker.io` as the value for ` 
+- Get access to a container registry such as quay, dockerhub, or your own private registry instance from a Cloud provider such as IBM Cloud 😉. On this tutorial we are going to use [Dockerhub](https://hub.docker.com/)
+
+- Set the environment variables `REGISTRY_SERVER`, `REGISTRY_NAMESPACE` and `REGISTRY_PASSWORD`, The `REGISTRY_NAMESPACE` most likely would be your dockerhub username. For Dockerhub use `docker.io` as the value for `REGISTRY_SERVER`
     ```bash
     REGISTRY_SERVER='docker.io'
     REGISTRY_NAMESPACE='REPLACEME_DOCKER_USERNAME_VALUE'
@@ -93,6 +64,20 @@
     ```
 
 </details>
+
+<details><summary>1.4 Setup Git</summary>
+
+- Get access to a git server such as gitlab, github, or your own private git instance from a Cloud provider such as IBM Cloud 😉. On this tutorial we are going to use [GitHub](https://github.com/)
+
+1. Fork  this repository
+1. Clone the repository and change directory
+    ```bash
+    git clone https://github.com/<REPLACE_YOUR_GIT_USER_OR_ORG>/knative-tekton
+    cd knative-tekton
+    ```
+
+</details>
+
 
 </details>
 
