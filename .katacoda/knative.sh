@@ -4,10 +4,6 @@
 curl -sL -o /usr/local/bin/kn https://github.com/knative/client/releases/download/v0.15.2/kn-linux-amd64
 master $ chmod +x /usr/local/bin/kn
 
-# Install tkn CLI
-curl -sLO https://github.com/tektoncd/cli/releases/download/v0.10.0/tkn_0.10.0_Linux_x86_64.tar.gz
-tar -xf  tkn_0.10.0_Linux_x86_64.tar.gz -C /usr/local/bin
-
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-core.yaml
 kubectl apply --filename https://github.com/knative/net-kourier/releases/download/v0.15.0/kourier.yaml
