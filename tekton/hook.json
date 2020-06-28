@@ -1,0 +1,9 @@
+{
+    "ref": "refs/heads/master",
+    "repository": {
+        "url": "https://github.com/csantanapr/knative-tekton"
+    },
+    "head_commit": {
+        "id": "dcfcecf5e6ccd8daddd98d99034cbc30bb71d84a"
+    }
+}

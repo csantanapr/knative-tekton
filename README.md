@@ -1012,14 +1012,19 @@
     1. Click on the top right **Add webhook**
     1. Copy and paste the `$GIT_WEBHOOK_URL` value into the **Payload URL**
     1. Select from the drop down Content type **application/json**
+    1. Select Send me **everything** to handle all types of git events.
     1. Click **Add webhook**
-1. (Optional) Another option instead of doing it manually you can use the following to create the git webhook programatically
+1. (Optional) Another option to create the webhook instead of doing it manually you can use the following to create the git webhook programatically
     ```bash
     curl -v -X POST -u $GIT_USERNAME:$GIT_ACCESS_TOKEN \
     -d "{\"name\": \"web\",\"active\": true,\"events\": [\"push\"],\"config\": {\"url\": \"$GIT_WEBHOOK_URL\",\"content_type\": \"json\",\"insecure_ssl\": \"1\"}}" \
     -L https://api.github.com/repos/$GIT_USERNAME/knative-tekton/hooks
     ```
 1. Now make a change to the application manifest such like changing the message in [knative/service.yaml](./knative/service.yaml) to something like `My First Serveless App @ OSS NA 2020  🎉 🌮 🔥 🤗!` and push the change to the `master` branch
+1. (Optional) If you can't receive the git webhook, for example if using minikube you can emulate the git web hook using by sending a http request directly with git payload. You can edit the file [tekton/hook.json](./tekton/hook.json) to use a different git commit value.
+    ```
+    curl -H "X-GitHub-Event:push" -d @tekton/hook.json $GIT_WEBHOOK_URL
+    ```
 1. A new Tekton **PipelineRun** gets created starting a new **Pipeline** Instance. You can check in the Tekton Dashboard for progress of use the tkn CLI
     ```bash
     tkn pipeline logs -f --last
