@@ -89,10 +89,15 @@
 
 - Get access to a git server such as gitlab, github, or your own private git instance from a Cloud provider such as IBM Cloud 😉. On this tutorial we are going to use [GitHub](https://github.com/)
 
-1. Fork  this repository
+1. Fork this repository https://github.com/csantanapr/knative-tekton
+1. Set the environment variable `GIT_REPO_URL` to the url of your fork, not mine. And your Git username `GIT_USERNAME`
+    ```bash
+    GIT_REPO_URL='https://github.com/REPLACEME/knative-tekton'
+    GIT_USERNAME='REPLACE_WITH_USERNAME_FOR_AUTH'
+    ```
 1. Clone the repository and change directory
     ```bash
-    git clone https://github.com/<REPLACE_YOUR_GIT_USER_OR_ORG>/knative-tekton
+    git clone $GIT_REPO_URL
     cd knative-tekton
     ```
 
@@ -491,7 +496,8 @@
 
 - Verify that the pods are in `Running` state in the `tekton-pipelines` namespace. If you installed the Tekton Dashboard also check that the service exist and in our case configure as `NodePort`
     ```bash
-    kubectl get pods,svc -n tekton-pipelines
+    kubectl get pods -n tekton-pipelines
+    kubectl get svc tekton-dashboard-ingress -n tekton-pipelines
     ```
 
 </details>
@@ -517,6 +523,10 @@
     echo "Run the previous command manually ^ this avoids problems with charaters in the shell"
     ```
     NOTE: If you password have some characters that are interpreted by the shell, then do NOT use environment variables, explicit enter your values in the command wrapped by single quotes `'`
+1. Verify the secret `regcred` was created
+    ```
+    kubectl describe secret regcred
+    ```
 1. Create a ServiceAccount `pipeline` that contains the secret `regsecret` that we just created
     ```yaml
     apiVersion: v1
@@ -553,7 +563,7 @@
         console.log(`App listening on ${port}`)
     });
     ```
-1. I provided a Tekton Task that can download source code from git, build and push the Image to a registry. Install the task _build_ like this.
+1. I provided a Tekton Task that can download source code from git, build and push the Image to a registry. 
     <details><summary>Show me the Build Task YAML</summary>
 
     ```yaml
@@ -621,7 +631,8 @@
         emptyDir: {}
     ```
     </details>
-
+    
+1. Install the provided task _build_ like this.
     ```bash
     kubectl apply -f tekton/task-build.yaml
     ```
