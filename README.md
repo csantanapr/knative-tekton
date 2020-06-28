@@ -916,6 +916,7 @@
 
     </details>
 
+1. Install the TriggerTemplate
     ```bash
     kubectl apply -f tekton/trigger-template.yaml
     ```
@@ -939,6 +940,7 @@
 
     </details>
 
+1. Install the TriggerBinding
     ```bash
     kubectl apply -f tekton/trigger-binding.yaml
     ```
@@ -975,6 +977,7 @@
 
     </details>
 
+1. Install the Trigger EventListener
     ```bash
     kubectl apply -f tekton/trigger-listener.yaml
     ```
@@ -985,11 +988,11 @@
 
 </details>
 
-<details><summary>6.4 Get URL for Git Hook</summary>
+<details><summary>6.4 Get URL for Git WebHook</summary>
 
 ### 6.4 Get URL for Git WebHook
 
-- It will depend on your cluster and how traffic is configured into your Kubernetes Cluster, you would need to configure an Application Load Balancer (ALB), Ingress, or in case of OpenShift a Route. If you are running the Kubernetes cluster on your local workstation using something minikube, kind, docker-desktop, or k3s then you I recommend a Cloud Native Tunnel solution like [inlets](https://docs.inlets.dev/#/) a by the open source contributor [Alex Ellis](https://twitter.com/alexellisuk) 
+- If you are using the IBM Free Kubernetes cluster a public IP Address is alocated to your worker node and we will use this one for this part of the tutorial. It will depend on your cluster and how traffic is configured into your Kubernetes Cluster, you would need to configure an Application Load Balancer (ALB), Ingress, or in case of OpenShift a Route. If you are running the Kubernetes cluster on your local workstation using something like minikube, kind, docker-desktop, or k3s then I recommend a Cloud Native Tunnel solution like [inlets](https://docs.inlets.dev/#/) by the open source contributor [Alex Ellis](https://twitter.com/alexellisuk). 
 
 1. Expose the EventListener as `NodePort`
     ```bash
@@ -1002,13 +1005,13 @@
     GIT_WEBHOOK_URL=http://$EXTERNAL_IP:$GIT_WEBHOOK_NODEPORT
     echo GIT_WEBHOOK_URL=$GIT_WEBHOOK_URL
     ```
-    **WARNING:** Take into account that this URL is insecure is using http and not https, this means you should not use this type of URL for real work environments, In that case you would need to expose the service for the eventlistener using a secure connection using *https** 
+    **WARNING:** Take into account that this URL is insecure is using http and not https, this means you should not use this type of URL for real work environments, In that case you would need to expose the service for the eventlistener using a secure connection using **https** 
 1. Add the Git Web Hook url to your Git repository
     1. Open Settings in your Github repository
-    1. Click **Webhooks**
-    1. Click **Add webhook**
+    1. Click on the side menu **Webhooks**
+    1. Click on the top right **Add webhook**
     1. Copy and paste the `$GIT_WEBHOOK_URL` value into the **Payload URL**
-    1. Select Content type **application/json**
+    1. Select from the drop down Content type **application/json**
     1. Click **Add webhook**
 1. (Optional) Another option instead of doing it manually you can use the following to create the git webhook programatically
     ```bash
@@ -1016,7 +1019,7 @@
     -d "{\"name\": \"web\",\"active\": true,\"events\": [\"push\"],\"config\": {\"url\": \"$GIT_WEBHOOK_URL\",\"content_type\": \"json\",\"insecure_ssl\": \"1\"}}" \
     -L https://api.github.com/repos/$GIT_USERNAME/knative-tekton/hooks
     ```
-1. Now make a change to application manifest such like changing the message in [knative/service.yaml](./knative/service.yaml) to something like `My First Serveless App @ OSS NA 2020  🎉 🌮 🔥 🤗!` and push the change to the default branch
+1. Now make a change to the application manifest such like changing the message in [knative/service.yaml](./knative/service.yaml) to something like `My First Serveless App @ OSS NA 2020  🎉 🌮 🔥 🤗!` and push the change to the `master` branch
 1. A new Tekton **PipelineRun** gets created starting a new **Pipeline** Instance. You can check in the Tekton Dashboard for progress of use the tkn CLI
     ```bash
     tkn pipeline logs -f --last
