@@ -45,3 +45,5 @@ kubectl get pods -n knative-serving
 kubectl get pods -n kourier-system
 kubectl get svc  -n kourier-system kourier-ingress
 
+SUB_DOMAIN="default.$KNATIVE_DOMAIN"
+echo SUB_DOMAIN=$SUB_DOMAIN
