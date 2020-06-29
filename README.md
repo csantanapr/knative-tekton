@@ -2,7 +2,7 @@
 
 <details><summary>1. Setup Environment</summary>
 
-## Setup Environment
+### 1. Setup Environment
 
 <details><summary>1.1 Setup Kubernetes Clusters</summary>
 
@@ -169,7 +169,7 @@
 
 <details><summary>3. Using Knative to Run Serverless Applications</summary>
 
-## 3. Using Knative to Run Serverless Applications
+### 3. Using Knative to Run Serverless Applications
 
 1. Set the environment variable `SUB_DOMAIN` to the kubernetes namespace with Domain name `<namespace>.<domainname>` this way we can use any kubernetes namespace other than `default`
     ```bash
@@ -182,7 +182,7 @@
 
 <details><summary>3.1 Create Knative Service</summary>
 
-### 3.1 Create Knative Service
+#### 3.1 Create Knative Service
 
 1. Using the Knative CLI `kn` deploy an application usig a Container Image
     ```bash
@@ -227,7 +227,7 @@
 
 <details><summary>3.2 Updating the Knative service</summary>
 
-### 3.2 Updating the Knative service 
+#### 3.2 Updating the Knative service 
 
 1. Update the service hello with a new environment variable `TARGET`
     ```bash
@@ -246,7 +246,7 @@
 
 <details><summary>3.3 Knative Service Traffic Splitting</summary>
 
-### 3.3 Knative Service Traffic Splitting
+#### 3.3 Knative Service Traffic Splitting
 
 1. Update the service hello by updating the environment variable `TARGET`, tag the previous version `v1`, send 25% traffic to this new version and leaving 75% of the traffic to `v1`
     ```bash
@@ -452,7 +452,7 @@
 
 <details><summary>4. Install Tekton Pipelines</summary>
 
-## 4. Install Tekton
+### 4. Install Tekton
 
 <details><summary>4.1 Install Tekton Pipelines</summary>
 
@@ -465,7 +465,7 @@
 
 <details><summary>4.2 Install Tekton Dashboard (Optional)</summary>
 
-### 4.2 Install Tekton Dashboard (Optional)
+#### 4.2 Install Tekton Dashboard (Optional)
 
 1. Install Tekton Dashboard in namespace `tekton-pipelines`
     ```bash
@@ -487,7 +487,7 @@
 
 <details><summary>4.3 Verify Tekton Pipeline Install</summary>
 
-### 4.3 Verify Tekton Pipeline Install
+#### 4.3 Verify Tekton Pipeline Install
 
 - Verify that the pods are in `Running` state in the `tekton-pipelines` namespace. If you installed the Tekton Dashboard also check that the service exist and in our case configure as `NodePort`
     ```bash
@@ -501,13 +501,13 @@
 
 <details><summary>5. Using Tekton to Build and Deploy Applications</summary>
 
-## Using Tekton to Build Applications
+### 5. Using Tekton to Build Applications
 
 - Tekton helps create composable DevOps Automation by putting together **Tasks**, and **Pipelines**
 
 <details><summary>5.1 Configure Access for Tekton</summary>
 
-### 5.1 Configure Access for Tekton
+#### 5.1 Configure Access for Tekton
 
 1. We need to package our application in a Container Image and store this Image in a Container Registry. Since we are going to need to create secrets with the registry credentials we are going to create a ServiceAccount `pipelines` with the associated secret `regcred`. Make sure you setup your container credentials as environment variables. Checkout the [Setup Container Registry](#setup-container-registry) in the Setup Environment section on this tutorial. This commands will print your credentials make sure no one is looking over, the printed command is what you need to run.
     ```bash
@@ -544,7 +544,7 @@
 
 <details><summary>5.2 The Build Tekton Task</summary>
 
-### 5.2 The Build Tekton Task
+#### 5.2 The Build Tekton Task
 
 1. In this repository we have a sample application, you can see the source code in [./nodejs/src/app.js](./nodejs/src/app.js) This application is using JavaScript to implement a web server, but you can use any language you want.
     ```javascript
@@ -763,7 +763,7 @@
 
 <details><summary>5.4 The Build and Deploy Pipeline</summary>
 
-### 5.4 The Build and Deploy Pipeline
+#### 5.4 The Build and Deploy Pipeline
 
 1. If we want to build the application image and then deploy the application, we can run the Tasks **build** and **deploy** by defining a **Pipeline** that contains the two Tasks, deploy the Pipeline `build-deploy`.
     <details><summary>Show me the Pipeline YAML</summary>
@@ -859,11 +859,11 @@
 
 <details><summary>6. Automate the Tekton Pipeline using Git Web Hooks Triggers</summary>
 
-## 6. Automate the Tekton Pipeline using Git Web Hooks
+### 6. Automate the Tekton Pipeline using Git Web Hooks
 
 <details><summary>6.1 Install Tekton Triggers</summary>
 
-### 6.1 Install Tekton Triggers
+#### 6.1 Install Tekton Triggers
 
 1. Install Tekton Triggers in namespace `tekton-pipelines`
     ```bash
@@ -874,7 +874,7 @@
 
 <details><summary>6.2 Create TriggerTemplate, TriggerBinding</summary>
 
-### 6.2 Create TriggerTemplate, TriggerBinding
+#### 6.2 Create TriggerTemplate, TriggerBinding
 
 1. When the Webhook invokes we want to start a Pipeline, we will a `TriggerTemplate` to use a specification on which Tekton resources should be created, in our case will be creating a new `PipelineRun` this will start a new `Pipeline` install.
     <details><summary>Show me the TriggerTemplate YAML</summary>
@@ -945,7 +945,7 @@
 
 <details><summary>6.3 Create Trigger EventListener</summary>
 
-### 6.3 Create Trigger EventListener
+#### 6.3 Create Trigger EventListener
 
 1. To be able to handle the http request sent by the GitHub Webhook, we need a webserver. Tekton provides a way to define this listeners that takes the `TriggerBinding` and the `TriggerTemplate` as specification. We can specify Interceptors to handle any customization for example I only want to start a new **Pipeline** only when push happens on the main branch.
     <details><summary>Show me the Trigger Eventlistener YAML</summary>
@@ -986,7 +986,7 @@
 
 <details><summary>6.4 Get URL for Git WebHook</summary>
 
-### 6.4 Get URL for Git WebHook
+#### 6.4 Get URL for Git WebHook
 
 - If you are using the IBM Free Kubernetes cluster a public IP Address is alocated to your worker node and we will use this one for this part of the tutorial. It will depend on your cluster and how traffic is configured into your Kubernetes Cluster, you would need to configure an Application Load Balancer (ALB), Ingress, or in case of OpenShift a Route. If you are running the Kubernetes cluster on your local workstation using something like minikube, kind, docker-desktop, or k3s then I recommend a Cloud Native Tunnel solution like [inlets](https://docs.inlets.dev/#/) by the open source contributor [Alex Ellis](https://twitter.com/alexellisuk). 
 
