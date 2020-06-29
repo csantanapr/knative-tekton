@@ -24,11 +24,6 @@
     ```bash
     kubectl version --short
     ```
-    Output should show the version of Kubernetes like this:
-    ```
-    Client Version: v1.18.3
-    Server Version: v1.18.3+IKS
-    ```
 
 </details>
 
@@ -58,7 +53,7 @@
 
 <details><summary>1.1.3 Kubernetes with Katacoda</summary>
 
-- TODO: Add final link to scenario
+- For a short version of this tutorial try it out on my [Katacoda Scenario](https://www.katacoda.com/csantanapr/scenarios/knative-tekton)
 
 </details>
 
@@ -193,7 +188,7 @@
     ```bash
     kn service create hello --image gcr.io/knative-samples/helloworld-go
     ```
-1. You can see list your service
+1. You can list your service
     ```bash
     kn service list hello
     ```
@@ -821,6 +816,7 @@
     ```
     </details>
 
+1. Install the Pipeline with this command
     ```bash
     kubectl apply -f tekton/pipeline-build-deploy.yaml
     ```
