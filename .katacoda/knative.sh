@@ -12,6 +12,8 @@ echo EXTERNAL_IP=$EXTERNAL_IP
 KNATIVE_DOMAIN="$EXTERNAL_IP.nip.io"
 echo KNATIVE_DOMAIN=$KNATIVE_DOMAIN
 kubectl patch configmap -n knative-serving config-domain -p "{\"data\": {\"$KNATIVE_DOMAIN\": \"\"}}"
+export SUB_DOMAIN="default.$KNATIVE_DOMAIN"
+echo SUB_DOMAIN=$SUB_DOMAIN
 
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
@@ -41,5 +43,4 @@ kubectl get pods -n knative-serving
 kubectl get pods -n kourier-system
 kubectl get svc  -n kourier-system kourier-ingress
 
-export SUB_DOMAIN="default.$KNATIVE_DOMAIN"
-echo SUB_DOMAIN=$SUB_DOMAIN
+
