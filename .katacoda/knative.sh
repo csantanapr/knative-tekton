@@ -2,7 +2,7 @@
 
 # Install kn cli
 curl -sL -o /usr/local/bin/kn https://github.com/knative/client/releases/download/v0.15.2/kn-linux-amd64
-master $ chmod +x /usr/local/bin/kn
+chmod +x /usr/local/bin/kn
 
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-core.yaml
