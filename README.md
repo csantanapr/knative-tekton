@@ -69,13 +69,18 @@
 
 <details><summary>1.3 Setup Container Registry</summary>
 
-- Get access to a container registry such as quay, dockerhub, or your own private registry instance from a Cloud provider such as IBM Cloud 😉. On this tutorial we are going to use [Dockerhub](https://hub.docker.com/)
-
-- Set the environment variables `REGISTRY_SERVER`, `REGISTRY_NAMESPACE` and `REGISTRY_PASSWORD`, The `REGISTRY_NAMESPACE` most likely would be your dockerhub username. For Dockerhub use `docker.io` as the value for `REGISTRY_SERVER`
+1. Get access to a container registry such as quay, dockerhub, or your own private registry instance from a Cloud provider such as IBM Cloud 😉. On this tutorial we are going to use [Dockerhub](https://hub.docker.com/)
+1. Set the environment variables `REGISTRY_SERVER`, `REGISTRY_NAMESPACE` and `REGISTRY_PASSWORD`, The `REGISTRY_NAMESPACE` most likely would be your dockerhub username. For Dockerhub use `docker.io` as the value for `REGISTRY_SERVER`
     ```bash
     REGISTRY_SERVER='docker.io'
     REGISTRY_NAMESPACE='REPLACEME_DOCKER_USERNAME_VALUE'
     REGISTRY_PASSWORD='REPLACEME_DOCKER_PASSWORD'
+    ```
+1. You can use the file [.template.env](./.template.env) as template for the variables
+    ```bash
+    cp .template.env .env
+    # edit the file .env with variables and credentials the source the file
+    source .env
     ```
 
 </details>
@@ -85,15 +90,20 @@
 - Get access to a git server such as gitlab, github, or your own private git instance from a Cloud provider such as IBM Cloud 😉. On this tutorial we are going to use [GitHub](https://github.com/)
 
 1. Fork this repository https://github.com/csantanapr/knative-tekton
-1. Set the environment variable `GIT_REPO_URL` to the url of your fork, not mine. And your Git username `GIT_USERNAME`
+1. Set the environment variable `GIT_REPO_URL` to the url of your fork, not mine.
     ```bash
     GIT_REPO_URL='https://github.com/REPLACEME/knative-tekton'
-    GIT_USERNAME='REPLACE_WITH_USERNAME_FOR_AUTH'
     ```
 1. Clone the repository and change directory
     ```bash
     git clone $GIT_REPO_URL
     cd knative-tekton
+    ```
+1. You can use the file [.template.env](./.template.env) as template for the variables
+    ```bash
+    cp .template.env .env
+    # edit the file .env with variables and credentials the source the file
+    source .env
     ```
 
 </details>
@@ -1010,12 +1020,6 @@
     1. Select from the drop down Content type **application/json**
     1. Select Send me **everything** to handle all types of git events.
     1. Click **Add webhook**
-1. (Optional) Another option to create the webhook instead of doing it manually you can use the following to create the git webhook programatically
-    ```bash
-    curl -v -X POST -u $GIT_USERNAME:$GIT_ACCESS_TOKEN \
-    -d "{\"name\": \"web\",\"active\": true,\"events\": [\"push\"],\"config\": {\"url\": \"$GIT_WEBHOOK_URL\",\"content_type\": \"json\",\"insecure_ssl\": \"1\"}}" \
-    -L https://api.github.com/repos/$GIT_USERNAME/knative-tekton/hooks
-    ```
 1. Now make a change to the application manifest such like changing the message in [knative/service.yaml](./knative/service.yaml) to something like `My First Serveless App @ OSS NA 2020  🎉 🌮 🔥 🤗!` and push the change to the `master` branch
 1. (Optional) If you can't receive the git webhook, for example if using minikube you can emulate the git web hook using by sending a http request directly with git payload. You can edit the file [tekton/hook.json](./tekton/hook.json) to use a different git commit value.
     ```
