@@ -9,9 +9,12 @@
 <details><summary>1.1.1 IBM Free Kubernetes Cluster</summary>
 
 - Get a free Kubernetes cluster on [IBM Cloud](https://cloud.ibm.com), also check out the booth at OSS-NA IBM booth during the conference how to get $200 credit.
+    - Video: [How to get a free IBM Cloud Account](https://youtu.be/YVvZEG2Isqw)
+    - Video: [How to get a free Kubernetes Cluster on IBM Cloud](https://youtu.be/g9LXeQgTEcM)
+    - Video: [How to connect to your Kubernetes Cluster using IBM Cloud Shell](https://youtu.be/sn-6ROEvqns)
 
 1. Select cluster from IBM Cloud console
-1. Click the drop down Action menu on the top right and select **Connect via CLI** and follow the commands.
+1. Click the drop down Action menu on the top right and select [**Connect via CLI**](https://cloud.ibm.com/docs/cli?topic=cli-install-ibmcloud-cli#shell_install) and follow the commands.
 1. Log in to your IBM Cloud account
     ```bash
     ibmcloud login -a cloud.ibm.com -r <REGION> -g <IAM_RESOURCE_GROUP>
