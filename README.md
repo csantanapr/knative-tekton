@@ -1,5 +1,7 @@
 # Open Source Summit NA 2020 - Knative + Tekton Tutorial
 
+Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
+
 <details><summary>1. Setup Environment</summary>
 
 ### 1. Setup Environment
