@@ -515,17 +515,18 @@
 
 - Tekton helps create composable DevOps Automation by putting together **Tasks**, and **Pipelines**
 
-<details><summary>5.1 Configure Access for Tekton</summary>
+<details><summary>5.1 Configure Credentials and ServiceAccounts for Tekton</summary>
 
 #### 5.1 Configure Access for Tekton
 
 1. We need to package our application in a Container Image and store this Image in a Container Registry. Since we are going to need to create secrets with the registry credentials we are going to create a ServiceAccount `pipelines` with the associated secret `regcred`. Make sure you setup your container credentials as environment variables. Checkout the [Setup Container Registry](#setup-container-registry) in the Setup Environment section on this tutorial. This commands will print your credentials make sure no one is looking over, the printed command is what you need to run.
     ```bash
+    echo ""
     echo kubectl create secret docker-registry regcred \
       --docker-server=\'${REGISTRY_SERVER}\' \
       --docker-username=\'${REGISTRY_NAMESPACE}\' \
       --docker-password=\'${REGISTRY_PASSWORD}\'
-    echo "Run the previous command manually ^ this avoids problems with charaters in the shell"
+    echo "\nRun the above command manually ^^ this avoids problems with certain charaters in your password on  the shell"
     ```
     NOTE: If you password have some characters that are interpreted by the shell, then do NOT use environment variables, explicit enter your values in the command wrapped by single quotes `'`
 1. Verify the secret `regcred` was created
