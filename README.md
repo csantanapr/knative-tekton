@@ -1,4 +1,5 @@
-# Open Source Summit NA 2020 - Knative + Tekton Tutorial
+# Tutorial: Knative + Tekton
+## Linux Foundation Open Source Summit NA 2020
 
 Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
