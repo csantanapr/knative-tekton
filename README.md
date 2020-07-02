@@ -59,7 +59,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 <details><summary>1.1.3 Kubernetes with Katacoda</summary>
 
-- For a short version of this tutorial try it out on my [Katacoda Scenario](https://www.katacoda.com/csantanapr/scenarios/knative-tekton)
+- For a short version of this tutorial try it out on my [Katacoda Scenario](https://www.katacoda.com/csantanapr/)
 
 </details>
 
