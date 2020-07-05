@@ -124,12 +124,13 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 1. Install Knative Serving in namespace `knative-serving`
     ```bash
     kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml
-
     kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-core.yaml
+    kubectl wait pod --all --for=condition=Ready -n knative-serving 
     ```
 1. Install Knative Layer kourier in namespace `kourier-system`
     ```
     kubectl apply --filename https://github.com/knative/net-kourier/releases/download/v0.15.0/kourier.yaml
+    kubectl wait pod --all --for=condition=Ready -n kourier-system
     ```
 1. Set the environment variable `EXTERNAL_IP` to External IP Address of the Worker Node
     ```bash
@@ -475,6 +476,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 - Install Tekton Pipelines in namespace `tekton-pipelines`
     ```bash
     kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.13.2/release.yaml
+    kubectl wait pod --all --for=condition=Ready -n tekton-pipelines
     ```
 
 </details>
@@ -486,6 +488,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 1. Install Tekton Dashboard in namespace `tekton-pipelines`
     ```bash
     kubectl apply --filename https://github.com/tektoncd/dashboard/releases/download/v0.7.0/tekton-dashboard-release.yaml
+    ubectl wait pod --all --for=condition=Ready -n tekton-pipelines
     ```
 1. To access the dashboard you can configure a service with `NodePort`
     ```bash
@@ -885,6 +888,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 1. Install Tekton Triggers in namespace `tekton-pipelines`
     ```bash
     kubectl apply --filename  https://storage.googleapis.com/tekton-releases/triggers/previous/v0.5.0/release.yaml
+    kubectl wait pod --all --for=condition=Ready -n tekton-pipelines
     ``` 
 
 </details>

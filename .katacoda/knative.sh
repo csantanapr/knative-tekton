@@ -6,7 +6,10 @@ chmod +x /usr/local/bin/kn
 
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-core.yaml
+kubectl wait pod --all --for=condition=Ready -n knative-serving
 kubectl apply --filename https://github.com/knative/net-kourier/releases/download/v0.15.0/kourier.yaml
+kubectl wait pod --all --for=condition=Ready -n kourier-system
+
 EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
 echo EXTERNAL_IP=$EXTERNAL_IP
 KNATIVE_DOMAIN="$EXTERNAL_IP.nip.io"
