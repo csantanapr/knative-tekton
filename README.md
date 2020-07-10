@@ -566,7 +566,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 #### 5.2 The Build Tekton Task
 
-1. In this repository we have a sample application, you can see the source code in [./nodejs/src/app.js](./nodejs/src/app.js) This application is using JavaScript to implement a web server, but you can use any language you want.
+1. In this repository we have a sample application, you can see the source code in [./nodejs/app.js](./nodejs/app.js) This application is using JavaScript to implement a web server, but you can use any language you want.
     ```javascript
     const app = require("express")()
     const server = require("http").createServer(app)
