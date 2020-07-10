@@ -1017,7 +1017,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```
 1. Get the url using the external IP of the worker node and the `NodePort` assign. Set an environment variable `GIT_WEBHOOK_URL`
     ```bash
-    EXTERNAL_IP=$(minkube ip || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    EXTERNAL_IP=$(minikube ip || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     GIT_WEBHOOK_NODEPORT=$(kubectl get svc el-cicd-ingress -o jsonpath='{.spec.ports[0].nodePort}')
     GIT_WEBHOOK_URL=http://$EXTERNAL_IP:$GIT_WEBHOOK_NODEPORT
     echo GIT_WEBHOOK_URL=$GIT_WEBHOOK_URL
