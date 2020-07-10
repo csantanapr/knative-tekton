@@ -22,7 +22,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```bash
     ibmcloud login -a cloud.ibm.com -r <REGION> -g <IAM_RESOURCE_GROUP>
     ```
-1. Set the Kubernetes context
+1. Set the Kubernetes context`
     ```bash
     ibmcloud ks cluster config -c mycluster
     ```
@@ -488,7 +488,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 1. Install Tekton Dashboard in namespace `tekton-pipelines`
     ```bash
     kubectl apply --filename https://github.com/tektoncd/dashboard/releases/download/v0.7.0/tekton-dashboard-release.yaml
-    ubectl wait pod --all --for=condition=Ready -n tekton-pipelines
+    kubectl wait pod --all --for=condition=Ready -n tekton-pipelines
     ```
 1. To access the dashboard you can configure a service with `NodePort`
     ```bash
