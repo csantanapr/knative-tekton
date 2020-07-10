@@ -22,7 +22,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```bash
     ibmcloud login -a cloud.ibm.com -r <REGION> -g <IAM_RESOURCE_GROUP>
     ```
-1. Set the Kubernetes context`
+1. Set the Kubernetes context
     ```bash
     ibmcloud ks cluster config -c mycluster
     ```
