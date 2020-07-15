@@ -123,13 +123,13 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 1. Install Knative Serving in namespace `knative-serving`
     ```bash
-    kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-crds.yaml
-    kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.1/serving-core.yaml
+    kubectl apply -f https://github.com/knative/serving/releases/download/v0.16.0/serving-crds.yaml
+    kubectl apply -f https://github.com/knative/serving/releases/download/v0.16.0/serving-core.yaml
     kubectl wait pod --all --for=condition=Ready -n knative-serving 
     ```
 1. Install Knative Layer kourier in namespace `kourier-system`
     ```
-    kubectl apply --filename https://github.com/knative/net-kourier/releases/download/v0.15.0/kourier.yaml
+    kubectl apply -f https://github.com/knative/net-kourier/releases/download/v0.16.0/kourier.yaml
     kubectl wait pod --all --for=condition=Ready -n kourier-system
     ```
 1. Set the environment variable `EXTERNAL_IP` to External IP Address of the Worker Node
@@ -141,6 +141,10 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```bash
     KNATIVE_DOMAIN="$EXTERNAL_IP.nip.io"
     echo KNATIVE_DOMAIN=$KNATIVE_DOMAIN
+    ```
+    Double check DNS is resolving
+    ```bash
+    dig $KNATIVE_DOMAIN
     ```
 1. Configure DNS for Knative Serving
     ```bash
@@ -192,9 +196,9 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```bash
     CURRENT_CTX=$(kubectl config current-context)
     CURRENT_NS=$(kubectl config view -o=jsonpath="{.contexts[?(@.name==\"${CURRENT_CTX}\")].context.namespace}")
-    if [[ -z "${ns}" ]]; then CURRENT_NS="default" fi
+    if [[ -z "${CURRENT_NS}" ]]; then CURRENT_NS="default" fi
     SUB_DOMAIN="$CURRENT_NS.$KNATIVE_DOMAIN"
-    echo SUB_DOMAIN=$SUB_DOMAIN
+    echo "\n\nSUB_DOMAIN=$SUB_DOMAIN"
     ```
 
 <details><summary>3.1 Create Knative Service</summary>
@@ -204,6 +208,10 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 1. Using the Knative CLI `kn` deploy an application usig a Container Image
     ```bash
     kn service create hello --image gcr.io/knative-samples/helloworld-go
+    ```
+    You can set a lower window. The service is scaled to zero if no request was receivedin during that time.
+    ```bash
+    --autoscale-window 10s
     ```
 1. You can list your service
     ```bash
@@ -298,7 +306,8 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 1. Invoke the service usign a while loop you will see the message `Hello Knative from v2` 25% of the time
     ```bash
     while true; do
-    curl http://hello.$SUB_DOMAIN 
+    curl http://hello.$SUB_DOMAIN
+    sleep 0.5
     done
     ```
     Should print this
@@ -359,7 +368,8 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 1. If we invoke the service in a loop you will see that 100% of the traffic is directed to version `v3` of our application
     ```bash
     while true; do
-    curl http://hello.$SUB_DOMAIN 
+    curl http://hello.$SUB_DOMAIN
+    sleep 0.5
     done
     ```
     Should print this
