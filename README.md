@@ -485,7 +485,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 - Install Tekton Pipelines in namespace `tekton-pipelines`
     ```bash
-    kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.13.2/release.yaml
+    kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/v0.14.1/release.yaml
     kubectl wait pod --all --for=condition=Ready -n tekton-pipelines
     ```
 
@@ -497,7 +497,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 1. Install Tekton Dashboard in namespace `tekton-pipelines`
     ```bash
-    kubectl apply --filename https://github.com/tektoncd/dashboard/releases/download/v0.7.0/tekton-dashboard-release.yaml
+    kubectl apply -f https://github.com/tektoncd/dashboard/releases/download/v0.7.1/tekton-dashboard-release.yaml
     kubectl wait pod --all --for=condition=Ready -n tekton-pipelines
     ```
 1. To access the dashboard you can configure a service with `NodePort`
@@ -567,7 +567,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```
 1. We are going to be using Tekton to deploy the Knative Service, we need to configure RBAC to provide edit access to the current namespace `default` to the ServiceAccount `pipeline` if you are using a different namespace than `default` edit the file `tekton/rbac.yaml` and provide the namespace where to create the `Role` and the `RoleBinding` fo more info check out the [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) docs. Run the following command to grant access to sa `pipelines`
     ```bash
-    kubectl apply -f tekton/rbac.yaml
+    cat tekton/rbac.yaml | sed "s/namespace: default/namespace: $CURRENT_NS/g" | kubectl apply -f -
     ```
 
 </details>
