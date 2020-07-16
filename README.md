@@ -125,12 +125,12 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```bash
     kubectl apply -f https://github.com/knative/serving/releases/download/v0.16.0/serving-crds.yaml
     kubectl apply -f https://github.com/knative/serving/releases/download/v0.16.0/serving-core.yaml
-    kubectl wait pod --all --for=condition=Ready -n knative-serving 
+    kubectl wait deployment activator autoscaler controller webhook --for=condition=Available -n knative-serving 
     ```
 1. Install Knative Layer kourier in namespace `kourier-system`
     ```
     kubectl apply -f https://github.com/knative/net-kourier/releases/download/v0.16.0/kourier.yaml
-    kubectl wait pod --all --for=condition=Ready -n kourier-system
+    kubectl wait deployment 3scale-kourier-control 3scale-kourier-gateway --for=condition=Available -n kourier-system 
     ```
 1. Set the environment variable `EXTERNAL_IP` to External IP Address of the Worker Node
     ```bash
@@ -486,7 +486,8 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 - Install Tekton Pipelines in namespace `tekton-pipelines`
     ```bash
     kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/v0.14.1/release.yaml
-    kubectl wait pod --all --for=condition=Ready -n tekton-pipelines
+    kubectl wait deployment tekton-pipelines-controller tekton-pipelines-webhook --for=condition=Available -n tekton-pipelines
+
     ```
 
 </details>
@@ -498,7 +499,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 1. Install Tekton Dashboard in namespace `tekton-pipelines`
     ```bash
     kubectl apply -f https://github.com/tektoncd/dashboard/releases/download/v0.7.1/tekton-dashboard-release.yaml
-    kubectl wait pod --all --for=condition=Ready -n tekton-pipelines
+    kubectl wait deployment tekton-dashboard --for=condition=Available -n tekton-pipelines
     ```
 1. To access the dashboard you can configure a service with `NodePort`
     ```bash
@@ -897,8 +898,8 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 1. Install Tekton Triggers in namespace `tekton-pipelines`
     ```bash
-    kubectl apply --filename  https://storage.googleapis.com/tekton-releases/triggers/previous/v0.5.0/release.yaml
-    kubectl wait pod --all --for=condition=Ready -n tekton-pipelines
+    kubectl apply -f https://github.com/tektoncd/triggers/releases/download/v0.6.1/release.yaml
+    kubectl wait deployment tekton-triggers-controller tekton-triggers-webhook --for=condition=Available -n tekton-pipelines
     ``` 
 
 </details>
@@ -945,7 +946,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 1. Install the TriggerTemplate
     ```bash
-    kubectl apply -f tekton/trigger-template.yaml
+    cat tekton/trigger-template.yaml | sed "s/REPLACE_IMAGE/$REGISTRY_SERVER\/$REGISTRY_NAMESPACE\/knative-tekton/g" | kubectl apply -f -
     ```
 1. When the Webhook invokes we want to extract information from the Web Hook http request sent by the Git Server, we will use a `TriggerBinding` this information is what gets passed to the `TriggerTemplate`.
     <details><summary>Show me the TriggerBinding YAML</summary>
@@ -1027,7 +1028,6 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```
 1. Get the url using the external IP of the worker node and the `NodePort` assign. Set an environment variable `GIT_WEBHOOK_URL`
     ```bash
-    EXTERNAL_IP=$(minikube ip || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     GIT_WEBHOOK_NODEPORT=$(kubectl get svc el-cicd-ingress -o jsonpath='{.spec.ports[0].nodePort}')
     GIT_WEBHOOK_URL=http://$EXTERNAL_IP:$GIT_WEBHOOK_NODEPORT
     echo GIT_WEBHOOK_URL=$GIT_WEBHOOK_URL

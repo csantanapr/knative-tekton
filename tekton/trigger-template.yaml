@@ -10,6 +10,8 @@ spec:
     - name: gitrepositoryurl
       description: The git repository url
     - name: gittruncatedsha
+    - name: image
+      default: REPLACE_IMAGE
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -26,3 +28,5 @@ spec:
             value: $(params.gitrepositoryurl)
           - name: image-tag
             value: $(params.gittruncatedsha)
+          - name: image
+            value: $(params.image)
