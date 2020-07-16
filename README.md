@@ -35,7 +35,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 <details><summary>1.1.2 Kubernetes with Minikube</summary>
 
-1. Install [minikube](https://minikube.sigs.k8s.io) Linux, MacOS, Windows. This tutorial was tested with version `v1.11.0`. You can verify version with
+1. Install [minikube](https://minikube.sigs.k8s.io) Linux, MacOS, Windows. This tutorial was tested with version `v1.12.0`. You can verify version with
     ```
     minikube update-check
     ```
@@ -207,7 +207,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 1. Using the Knative CLI `kn` deploy an application usig a Container Image
     ```bash
-    kn service create hello --image gcr.io/knative-samples/helloworld-go
+    kn service create hello --image gcr.io/knative-samples/helloworld-go --autoscale-window 15s
     ```
     You can set a lower window. The service is scaled to zero if no request was receivedin during that time.
     ```bash
@@ -507,7 +507,6 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```
 1. Set an environment variable `TEKTON_DASHBOARD_URL` with the url to access the Dashboard
     ```bash
-    EXTERNAL_IP=$(minikube ip || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
     TEKTON_DASHBOARD_NODEPORT=$(kubectl get svc tekton-dashboard-ingress -n tekton-pipelines -o jsonpath='{.spec.ports[0].nodePort}')
     TEKTON_DASHBOARD_URL=http://$EXTERNAL_IP:$TEKTON_DASHBOARD_NODEPORT
     echo TEKTON_DASHBOARD_URL=$TEKTON_DASHBOARD_URL
@@ -595,66 +594,65 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```yaml
     apiVersion: tekton.dev/v1beta1
     kind: Task
-    metadata:
-    name: build
+      metadata:
+        name: build
     spec:
-    params:
+      params:
         - name: repo-url
-        description: The git repository url
+          description: The git repository url
         - name: revision
-        description: The branch, tag, or git reference from the git repo-url location
-        default: master
+          description: The branch, tag, or git reference from the git repo-url location
+          default: master
         - name: image
-        description: "The location where to push the image in the form of <server>/<namespace>/<repository>:<tag>"
+          description: "The location where to push the image in the form of <server>/<namespace>/<repository>:<tag>"
         - name: CONTEXT
-        description: Path to the directory to use as context.
-        default: .
+          description: Path to the directory to use as context.
+          default: .
         - name: BUILDER_IMAGE
-        description: The location of the buildah builder image.
-        default: quay.io/buildah/stable:v1.14.8
+          description: The location of the buildah builder image.
+          default: quay.io/buildah/stable:v1.14.8
         - name: STORAGE_DRIVER
-        description: Set buildah storage driver
-        default: overlay
+          description: Set buildah storage driver
+          default: overlay
         - name: DOCKERFILE
-        description: Path to the Dockerfile to build.
-        default: ./Dockerfile
+          description: Path to the Dockerfile to build.
+          default: ./Dockerfile
         - name: TLSVERIFY
-        description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
-        default: "false"
+          description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
+          default: "false"
         - name: FORMAT
-        description: The format of the built container, oci or docker
-        default: "oci"
-
-    steps:
+          description: The format of the built container, oci or docker
+          default: "oci"
+      steps:
         - name: git-clone
-        image: alpine/git
-        script: |
+          image: alpine/git
+          script: |
             git clone $(params.repo-url) /source
             cd /source
             git checkout $(params.revision)
-        volumeMounts:
+          volumeMounts:
             - name: source
-            mountPath: /source
+              mountPath: /source
         - name: build-image
-        image: $(params.BUILDER_IMAGE)
-        workingdir: /source
-        script: |
+          image: $(params.BUILDER_IMAGE)
+          workingdir: /source
+          script: |
             echo "Building Image $(params.image)"
             buildah --storage-driver=$(params.STORAGE_DRIVER) bud --format=$(params.FORMAT) --tls-verify=$(params.TLSVERIFY) -f $(params.DOCKERFILE) -t $(params.image) $(params.CONTEXT)
             echo "Pushing Image $(params.image)"
             buildah  --storage-driver=$(params.STORAGE_DRIVER) push --tls-verify=$(params.TLSVERIFY) --digestfile ./image-digest $(params.image) docker://$(params.image)
-        securityContext:
+          securityContext:
             privileged: true
-        volumeMounts:
+          volumeMounts:
             - name: varlibcontainers
-            mountPath: /var/lib/containers
+              mountPath: /var/lib/containers
             - name: source
-            mountPath: /source
-    volumes:
+             mountPath: /source
+      volumes:
         - name: varlibcontainers
-        emptyDir: {}
+          emptyDir: {}
         - name: source
-        emptyDir: {}
+          emptyDir: {}
     ```
     </details>
     
@@ -802,48 +800,47 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```yaml
     apiVersion: tekton.dev/v1beta1
     kind: Pipeline
-    metadata:
-    name: build-deploy
+      metadata:
+        name: build-deploy
     spec:
-    params:
+      params:
         - name: repo-url
-        default: https://github.com/csantanapr/knative-tekton
+          default: https://github.com/csantanapr/knative-tekton
         - name: revision
-        default: master
+          default: master
         - name: image
-        default: docker.io/csantanapr/knative-tekton
         - name: image-tag
-        default: latest
+          default: latest
         - name: CONTEXT
-        default: nodejs
-    tasks:
+          default: nodejs
+      tasks:
         - name: build
-        taskRef:
+          taskRef:
             name: build
-        params:
+          params:
             - name: image
-            value: $(params.image):$(params.image-tag)
+              value: $(params.image):$(params.image-tag)
             - name: repo-url
-            value: $(params.repo-url)
+              value: $(params.repo-url)
             - name: revision
-            value: $(params.revision)
+              value: $(params.revision)
             - name: CONTEXT
-            value: $(params.CONTEXT)
+              value: $(params.CONTEXT)
         - name: deploy
-        runAfter: [build]
-        taskRef:
+          runAfter: [build]
+          taskRef:
             name: deploy
-        params:
+          params:
             - name: image
-            value: $(params.image):$(params.image-tag)
+              value: $(params.image):$(params.image-tag)
             - name: repo-url
-            value: $(params.repo-url)
+              value: $(params.repo-url)
             - name: revision
-            value: $(params.revision)
+              value: $(params.revision)
             - name: dir
-            value: knative
+              value: knative
             - name: yaml
-            value: service.yaml
+              value: service.yaml
     ```
     </details>
 
