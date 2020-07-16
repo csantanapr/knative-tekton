@@ -692,42 +692,41 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```yaml
     apiVersion: tekton.dev/v1beta1
     kind: Task
-    metadata:
-    name: deploy
+      metadata:
+        name: deploy
     spec:
-    params:
+      params:
         - name: repo-url
-        description: The git repository url
+          description: The git repository url
         - name: revision
-        description: The branch, tag, or git reference from the git repo-url location
-        default: master
+          description: The branch, tag, or git reference from the git repo-url location
+          default: master
         - name: dir
-        description: Path to the directory to use as context.
-        default: .
+          description: Path to the directory to use as context.
+          default: .
         - name: yaml
-        description: Path to the directory to use as context.
-        default: ""
+          description: Path to the directory to use as context.
+          default: ""
         - name: image
-        description: Path to the container image
-        default: ""
+          description: Path to the container image
+          default: ""
         - name: KUBECTL_IMAGE
-        description: The location of the kubectl image.
-        default: docker.io/csantanapr/kubectl
-
-    steps:
+          description: The location of the kubectl image.
+          default: docker.io/csantanapr/kubectl
+      steps:
         - name: git-clone
-        image: alpine/git
-        script: |
+          image: alpine/git
+          script: |
             git clone $(params.repo-url) /source
             cd /source
             git checkout $(params.revision)
-        volumeMounts:
+          volumeMounts:
             - name: source
-            mountPath: /source
+              mountPath: /source
         - name: kubectl-apply
-        image: $(params.KUBECTL_IMAGE)
-        workingdir: /source
-        script: |
+          image: $(params.KUBECTL_IMAGE)
+          workingdir: /source
+          script: |
 
             if [ "$(params.image)" != "" ] && [ "$(params.yaml)" != "" ]; then
             yq w -i $(params.dir)/$(params.yaml) "spec.template.spec.containers[0].image" "$(params.image)"
@@ -736,12 +735,12 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
             kubectl apply -f $(params.dir)/$(params.yaml)
 
-        volumeMounts:
+          volumeMounts:
             - name: source
-            mountPath: /source
-    volumes:
+              mountPath: /source
+      volumes:
         - name: source
-        emptyDir: {}
+          emptyDir: {}
     ```
 
     </details>
@@ -911,32 +910,32 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```yaml
     apiVersion: triggers.tekton.dev/v1alpha1
     kind: TriggerTemplate
-    metadata:
-    name: build-deploy
+      metadata:
+        name: build-deploy
     spec:
-    params:
+      params:
         - name: gitrevision
-        description: The git revision
-        default: master
+          description: The git revision
+          default: master
         - name: gitrepositoryurl
-        description: The git repository url
+          description: The git repository url
         - name: gittruncatedsha
-    resourcetemplates:
+      resourcetemplates:
         - apiVersion: tekton.dev/v1beta1
-        kind: PipelineRun
-        metadata:
+          kind: PipelineRun
+          metadata:
             generateName: build-deploy-run-
-        spec:
+          spec:
             serviceAccountName: pipeline
             pipelineRef:
             name: build-deploy
             params:
             - name: revision
-                value: $(params.gitrevision)
+              value: $(params.gitrevision)
             - name: repo-url
-                value: $(params.gitrepositoryurl)
+              value: $(params.gitrepositoryurl)
             - name: image-tag
-                value: $(params.gittruncatedsha)
+              value: $(params.gittruncatedsha)
     ```
 
     </details>
@@ -951,16 +950,16 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```yaml
     apiVersion: triggers.tekton.dev/v1alpha1
     kind: TriggerBinding
-    metadata:
-    name: build-deploy
+      metadata:
+        name: build-deploy
     spec:
-    params:
+      params:
         - name: gitrevision
-        value: $(body.head_commit.id)
+          value: $(body.head_commit.id)
         - name: gitrepositoryurl
-        value: $(body.repository.url)
+          value: $(body.repository.url)
         - name: gittruncatedsha
-        value: $(body.extensions.truncated_sha)
+          value: $(body.extensions.truncated_sha)
     ```
 
     </details>
@@ -982,21 +981,21 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
     ```yaml
     apiVersion: triggers.tekton.dev/v1alpha1
     kind: EventListener
-    metadata:
-    name: cicd
+      metadata:
+        name: cicd
     spec:
-    serviceAccountName: pipeline
+      serviceAccountName: pipeline
     triggers:
         - name: cicd-trig
-        bindings:
+          bindings:
             - ref: build-deploy
-        template:
+          template:
             name: build-deploy
-        interceptors:
+          interceptors:
             - cel:
                 filter: "header.match('X-GitHub-Event', 'push') && body.ref == 'refs/heads/master'"
                 overlays:
-                - key: extensions.truncated_sha
+                  - key: extensions.truncated_sha
                     expression: "body.head_commit.id.truncate(7)"
     ```
 
