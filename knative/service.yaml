@@ -10,4 +10,4 @@ spec:
           imagePullPolicy: Always
           env:
             - name: TARGET
-              value: Welcome to the Knative Meetup
+              value: Welcome to the Knative Meetup Thanks for watching the demo video
