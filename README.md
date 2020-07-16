@@ -3,6 +3,8 @@
 
 Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
+Last Update: _2020/07/16_
+
 <details><summary>1. Setup Environment</summary>
 
 ### 1. Setup Environment
