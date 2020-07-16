@@ -406,10 +406,10 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
           name: hello-v1
         spec:
           containers:
-            - env:
+            - image: gcr.io/knative-samples/helloworld-go
+              env:
                 - name: TARGET
                   value: World from v1
-              image: gcr.io/knative-samples/helloworld-go
     ---
     apiVersion: serving.knative.dev/v1
     kind: Service
@@ -421,10 +421,10 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
           name: hello-v2
         spec:
           containers:
-            - env:
+            - image: gcr.io/knative-samples/helloworld-go
+              env:
                 - name: TARGET
                   value: Knative from v2
-              image: gcr.io/knative-samples/helloworld-go
     ---
     apiVersion: serving.knative.dev/v1
     kind: Service
@@ -436,10 +436,10 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
           name: hello-v3
         spec:
           containers:
-            - env:
+            - image: gcr.io/knative-samples/helloworld-go
+              env:
                 - name: TARGET
                   value: OSS NA 2020 from v3
-              image: gcr.io/knative-samples/helloworld-go
       traffic:
         - latestRevision: false
           percent: 0
