@@ -920,6 +920,8 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
         - name: gitrepositoryurl
           description: The git repository url
         - name: gittruncatedsha
+        - name: image
+          default: REPLACE_IMAGE
       resourcetemplates:
         - apiVersion: tekton.dev/v1beta1
           kind: PipelineRun
@@ -928,7 +930,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
           spec:
             serviceAccountName: pipeline
             pipelineRef:
-            name: build-deploy
+              name: build-deploy
             params:
             - name: revision
               value: $(params.gitrevision)
