@@ -82,7 +82,7 @@ Last Update: _2020/07/16_
     ```
 1. Verify the versions of the client `kubectl` and the cluster api-server, and that you can connect to your cluster.
     ```bash
-    kubectl version --short
+    kubectl cluster-info --context kind-knative
     ```
 
 </details>
@@ -163,8 +163,21 @@ Last Update: _2020/07/16_
     kubectl wait deployment 3scale-kourier-control 3scale-kourier-gateway --for=condition=Available -n kourier-system 
     ```
 1. Set the environment variable `EXTERNAL_IP` to External IP Address of the Worker Node
+    If using minikube:
     ```bash
-    EXTERNAL_IP=$(minikube ip || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    EXTERNAL_IP=$(minikube ip)
+    echo EXTERNAL_IP=$EXTERNAL_IP
+    ```
+    If using kind:
+    ```bash
+    EXTERNAL_IP="127.0.0.1"
+    ```
+    If using IBM Kubernetes:
+    ```bash
+    EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    ```
+    Verify the value
+    ```bash
     echo EXTERNAL_IP=$EXTERNAL_IP
     ```
 2. Set the environment variable `KNATIVE_DOMAIN` as the DNS domain using `nip.io`
@@ -180,7 +193,34 @@ Last Update: _2020/07/16_
     ```bash
     kubectl patch configmap -n knative-serving config-domain -p "{\"data\": {\"$KNATIVE_DOMAIN\": \"\"}}"
     ```
-1. Configure Kourier to listen for http port 80 on the External IP
+1. Configure Kourier to listen for http port 80 on the node
+    <details><summary>If using Kind then use this</summary>
+
+    ```bash
+    cat <<EOF | kubectl apply -f -
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: kourier-ingress
+      namespace: kourier-system
+      labels:
+        networking.knative.dev/ingress-provider: kourier
+    spec:
+      type: NodePort
+      selector:
+        app: 3scale-kourier-gateway
+      ports:
+        - name: http2
+          nodePort: 31080
+          port: 80
+          targetPort: 8080
+    EOF
+    ```
+
+    </details>
+
+    <details><summary>If using not using Kind then use this</summary>
+
     ```bash
     cat <<EOF | kubectl apply -f -
     apiVersion: v1
@@ -196,12 +236,14 @@ Last Update: _2020/07/16_
       ports:
         - name: http2
           port: 80
-          protocol: TCP
           targetPort: 8080
       externalIPs:
         - $EXTERNAL_IP
     EOF
     ```
+
+    </details>
+
 1. Configure Knative to use Kourier
     ```bash
     kubectl patch configmap/config-network \
