@@ -37,7 +37,7 @@ Last Update: _2020/07/16_
 
 <details><summary>1.1.2 Kubernetes with Minikube</summary>
 
-1. Install [minikube](https://minikube.sigs.k8s.io) Linux, MacOS, Windows. This tutorial was tested with version `v1.12.0`. You can verify version with
+1. Install [minikube](https://minikube.sigs.k8s.io) Linux, MacOS, or Windows. This tutorial was tested with version `v1.12.0`. You print current and latest version number
     ```
     minikube update-check
     ```
@@ -59,7 +59,35 @@ Last Update: _2020/07/16_
 
 </details>
 
-<details><summary>1.1.3 Kubernetes with Katacoda</summary>
+<details><summary>1.1.3 Kubernetes with Kind (Kubernetes In Docker)</summary>
+
+1. Install [minikube](https://kind.sigs.k8s.io/docs/user/quick-start/) Linux, MacOS, or Windows. This tutorial was tested with version `v0.8.1`. You can verify version with
+    ```bash
+    kind --version
+    ```
+1. A kind cluster manifest file [clusterconfig.yaml](./Kind/clusterconfig.yaml) is already provided, you can customize it. We are exposing port `80` on they host to be later use by the Knative Kourier ingress. To use a different version of kubernetes check the image digest to use from the kind [release page](https://github.com/kubernetes-sigs/kind/releases)
+    ```yaml
+    kind: Cluster
+    apiVersion: kind.sigs.k8s.io/v1alpha4
+    nodes:
+    - role: control-plane
+      image: kindest/node:v1.18.2@sha256:7b27a6d0f2517ff88ba444025beae41491b016bc6af573ba467b70c5e8e0d85f
+      extraPortMappings:
+      - containerPort: 31080 # expose port 31380 of the node to port 80 on the host, later to be use by kourier ingress
+        hostPort: 80
+    ```
+1. Create and start your cluster, we specify the config file above
+    ```
+    kind create cluster --name knative --config kind/clusterconfig.yaml
+    ```
+1. Verify the versions of the client `kubectl` and the cluster api-server, and that you can connect to your cluster.
+    ```bash
+    kubectl version --short
+    ```
+
+</details>
+
+<details><summary>1.1.4 Kubernetes with Katacoda</summary>
 
 - For a short version of this tutorial try it out on my [Katacoda Scenario](https://www.katacoda.com/csantanapr/)
 
