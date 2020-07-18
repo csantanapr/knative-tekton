@@ -596,8 +596,8 @@ Last Update: _2020/07/16_
     ```yaml
     apiVersion: tekton.dev/v1beta1
     kind: Task
-      metadata:
-        name: build
+    metadata:
+      name: build
     spec:
       params:
         - name: repo-url
@@ -641,6 +641,7 @@ Last Update: _2020/07/16_
           script: |
             echo "Building Image $(params.image)"
             buildah --storage-driver=$(params.STORAGE_DRIVER) bud --format=$(params.FORMAT) --tls-verify=$(params.TLSVERIFY) -f $(params.DOCKERFILE) -t $(params.image) $(params.CONTEXT)
+            
             echo "Pushing Image $(params.image)"
             buildah  --storage-driver=$(params.STORAGE_DRIVER) push --tls-verify=$(params.TLSVERIFY) --digestfile ./image-digest $(params.image) docker://$(params.image)
           securityContext:
@@ -649,7 +650,7 @@ Last Update: _2020/07/16_
             - name: varlibcontainers
               mountPath: /var/lib/containers
             - name: source
-             mountPath: /source
+              mountPath: /source
       volumes:
         - name: varlibcontainers
           emptyDir: {}
@@ -694,8 +695,8 @@ Last Update: _2020/07/16_
     ```yaml
     apiVersion: tekton.dev/v1beta1
     kind: Task
-      metadata:
-        name: deploy
+    metadata:
+      name: deploy
     spec:
       params:
         - name: repo-url
@@ -731,8 +732,8 @@ Last Update: _2020/07/16_
           script: |
 
             if [ "$(params.image)" != "" ] && [ "$(params.yaml)" != "" ]; then
-            yq w -i $(params.dir)/$(params.yaml) "spec.template.spec.containers[0].image" "$(params.image)"
-            cat $(params.dir)/$(params.yaml)
+              yq w -i $(params.dir)/$(params.yaml) "spec.template.spec.containers[0].image" "$(params.image)"
+              cat $(params.dir)/$(params.yaml)
             fi
 
             kubectl apply -f $(params.dir)/$(params.yaml)
@@ -773,7 +774,7 @@ Last Update: _2020/07/16_
               imagePullPolicy: Always
               env:
                 - name: TARGET
-                  value: Welcome to OSS NA 2020
+                  value: Welcome to the Knative Meetup
     ```
 1. Let's use the Tekton CLI to test our _deploy_ **Task** you need to pass the ServiceAccount `pipeline` to be use to run the Task. You will need to pass the GitHub URL to your fork or use this repository. You will need to pass the directory within the repository where the application yaml manifest is located and the file name in our case is `knative` and `service.yaml` .
     ```bash
@@ -801,8 +802,8 @@ Last Update: _2020/07/16_
     ```yaml
     apiVersion: tekton.dev/v1beta1
     kind: Pipeline
-      metadata:
-        name: build-deploy
+    metadata:
+      name: build-deploy
     spec:
       params:
         - name: repo-url
@@ -912,8 +913,8 @@ Last Update: _2020/07/16_
     ```yaml
     apiVersion: triggers.tekton.dev/v1alpha1
     kind: TriggerTemplate
-      metadata:
-        name: build-deploy
+    metadata:
+      name: build-deploy
     spec:
       params:
         - name: gitrevision
@@ -934,12 +935,14 @@ Last Update: _2020/07/16_
             pipelineRef:
               name: build-deploy
             params:
-            - name: revision
-              value: $(params.gitrevision)
-            - name: repo-url
-              value: $(params.gitrepositoryurl)
-            - name: image-tag
-              value: $(params.gittruncatedsha)
+              - name: revision
+                value: $(params.gitrevision)
+              - name: repo-url
+                value: $(params.gitrepositoryurl)
+              - name: image-tag
+                value: $(params.gittruncatedsha)
+              - name: image
+                value: $(params.image)
     ```
 
     </details>
@@ -954,8 +957,8 @@ Last Update: _2020/07/16_
     ```yaml
     apiVersion: triggers.tekton.dev/v1alpha1
     kind: TriggerBinding
-      metadata:
-        name: build-deploy
+    metadata:
+      name: build-deploy
     spec:
       params:
         - name: gitrevision
@@ -985,11 +988,11 @@ Last Update: _2020/07/16_
     ```yaml
     apiVersion: triggers.tekton.dev/v1alpha1
     kind: EventListener
-      metadata:
-        name: cicd
+    metadata:
+      name: cicd
     spec:
       serviceAccountName: pipeline
-    triggers:
+      triggers:
         - name: cicd-trig
           bindings:
             - ref: build-deploy

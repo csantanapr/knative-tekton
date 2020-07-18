@@ -21,7 +21,6 @@ spec:
     - name: KUBECTL_IMAGE
       description: The location of the kubectl image.
       default: docker.io/csantanapr/kubectl
-
   steps:
     - name: git-clone
       image: alpine/git
