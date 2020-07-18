@@ -27,12 +27,11 @@ spec:
         - name: CONTEXT
           value: $(params.CONTEXT)
     - name: deploy
-      runAfter: [build]
       taskRef:
         name: deploy
       params:
         - name: image
-          value: $(params.image):$(params.image-tag)
+          value: $(tasks.build.results.image)
         - name: repo-url
           value: $(params.repo-url)
         - name: revision
