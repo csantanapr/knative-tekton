@@ -559,7 +559,6 @@ Last Update: _2020/07/16_
     ```bash
     kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/v0.14.1/release.yaml
     kubectl wait deployment tekton-pipelines-controller tekton-pipelines-webhook --for=condition=Available -n tekton-pipelines
-
     ```
 
 </details>
@@ -573,27 +572,35 @@ Last Update: _2020/07/16_
     kubectl apply -f https://github.com/tektoncd/dashboard/releases/download/v0.7.1/tekton-dashboard-release.yaml
     kubectl wait deployment tekton-dashboard --for=condition=Available -n tekton-pipelines
     ```
-1. To access the dashboard you can configure a service with `NodePort`
+1. We can access the Tekton Dashboard serving using the Kourier Ingress using the `KNATIVE_DOMAIN`
     ```bash
-    kubectl expose service tekton-dashboard --name tekton-dashboard-ingress --type=NodePort -n tekton-pipelines
+    cat <<EOF | kubectl apply -f -
+    apiVersion: networking.internal.knative.dev/v1alpha1
+    kind: Ingress
+    metadata:
+      name: tekton-dashboard
+      namespace: tekton-pipelines
+      annotations:
+        networking.knative.dev/ingress.class: kourier.ingress.networking.knative.dev
+    spec:
+      rules:
+      - hosts:
+        - dashboard.tekton-pipelines.$KNATIVE_DOMAIN
+        http:
+          paths:
+          - splits:
+            - appendHeaders: {}
+              serviceName: tekton-dashboard
+              serviceNamespace: tekton-pipelines
+              servicePort: 9097
+        visibility: ExternalIP
+      visibility: ExternalIP
+    EOF
     ```
 1. Set an environment variable `TEKTON_DASHBOARD_URL` with the url to access the Dashboard
     ```bash
-    TEKTON_DASHBOARD_NODEPORT=$(kubectl get svc tekton-dashboard-ingress -n tekton-pipelines -o jsonpath='{.spec.ports[0].nodePort}')
-    TEKTON_DASHBOARD_URL=http://$EXTERNAL_IP:$TEKTON_DASHBOARD_NODEPORT
+    TEKTON_DASHBOARD_URL=http://dashboard.tekton-pipelines.$KNATIVE_DOMAIN
     echo TEKTON_DASHBOARD_URL=$TEKTON_DASHBOARD_URL
-    ```
-
-</details>
-
-<details><summary>4.3 Verify Tekton Pipeline Install</summary>
-
-#### 4.3 Verify Tekton Pipeline Install
-
-- Verify that the pods are in `Running` state in the `tekton-pipelines` namespace. If you installed the Tekton Dashboard also check that the service exist and in our case configure as `NodePort`
-    ```bash
-    kubectl get pods -n tekton-pipelines
-    kubectl get svc tekton-dashboard-ingress -n tekton-pipelines
     ```
 
 </details>
@@ -1092,14 +1099,34 @@ Last Update: _2020/07/16_
 
 - If you are using the IBM Free Kubernetes cluster a public IP Address is alocated to your worker node and we will use this one for this part of the tutorial. It will depend on your cluster and how traffic is configured into your Kubernetes Cluster, you would need to configure an Application Load Balancer (ALB), Ingress, or in case of OpenShift a Route. If you are running the Kubernetes cluster on your local workstation using something like minikube, kind, docker-desktop, or k3s then I recommend a Cloud Native Tunnel solution like [inlets](https://docs.inlets.dev/#/) by the open source contributor [Alex Ellis](https://twitter.com/alexellisuk). 
 
-1. Expose the EventListener as `NodePort`
+1. Expose the EventListener with Kourier
     ```bash
-    kubectl expose service el-cicd --name el-cicd-ingress --type=NodePort
+    cat <<EOF | kubectl apply -f -
+    apiVersion: networking.internal.knative.dev/v1alpha1
+    kind: Ingress
+    metadata:
+      name: el-cicd
+      namespace: $CURRENT_NS
+      annotations:
+        networking.knative.dev/ingress.class: kourier.ingress.networking.knative.dev
+    spec:
+      rules:
+      - hosts:
+        -  el-cicd.$CURRENT_NS.$KNATIVE_DOMAIN
+        http:
+          paths:
+          - splits:
+            - appendHeaders: {}
+              serviceName: el-cicd
+              serviceNamespace: $CURRENT_NS
+              servicePort: 8080
+        visibility: ExternalIP
+      visibility: ExternalIP
+    EOF
     ```
-1. Get the url using the external IP of the worker node and the `NodePort` assign. Set an environment variable `GIT_WEBHOOK_URL`
+1. Get the url using using `CURRENT_NS` and `KNATIVE_DOMAIN`
     ```bash
-    GIT_WEBHOOK_NODEPORT=$(kubectl get svc el-cicd-ingress -o jsonpath='{.spec.ports[0].nodePort}')
-    GIT_WEBHOOK_URL=http://$EXTERNAL_IP:$GIT_WEBHOOK_NODEPORT
+    GIT_WEBHOOK_URL=http://el-cicd.$CURRENT_NS.$KNATIVE_DOMAIN
     echo GIT_WEBHOOK_URL=$GIT_WEBHOOK_URL
     ```
     **WARNING:** Take into account that this URL is insecure is using http and not https, this means you should not use this type of URL for real work environments, In that case you would need to expose the service for the eventlistener using a secure connection using **https** 
