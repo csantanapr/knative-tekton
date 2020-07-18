@@ -29,6 +29,9 @@ spec:
     - name: FORMAT
       description: The format of the built container, oci or docker
       default: "oci"
+  results:
+    - name: image
+      description: The image url built and pushed
   steps:
     - name: git-clone
       image: alpine/git
@@ -48,6 +51,8 @@ spec:
         
         echo "Pushing Image $(params.image)"
         buildah  --storage-driver=$(params.STORAGE_DRIVER) push --tls-verify=$(params.TLSVERIFY) --digestfile ./image-digest $(params.image) docker://$(params.image)
+
+        echo -n "$(params.image)" | tee $(results.image.path)
       securityContext:
         privileged: true
       volumeMounts:
