@@ -37,7 +37,7 @@ Last Update: _2020/07/16_
 
 <details><summary>1.1.2 Kubernetes with Minikube</summary>
 
-1. Install [minikube](https://minikube.sigs.k8s.io) Linux, MacOS, Windows. This tutorial was tested with version `v1.12.0`. You can verify version with
+1. Install [minikube](https://minikube.sigs.k8s.io) Linux, MacOS, or Windows. This tutorial was tested with version `v1.12.0`. You print current and latest version number
     ```
     minikube update-check
     ```
@@ -59,7 +59,35 @@ Last Update: _2020/07/16_
 
 </details>
 
-<details><summary>1.1.3 Kubernetes with Katacoda</summary>
+<details><summary>1.1.3 Kubernetes with Kind (Kubernetes In Docker)</summary>
+
+1. Install [minikube](https://kind.sigs.k8s.io/docs/user/quick-start/) Linux, MacOS, or Windows. This tutorial was tested with version `v0.8.1`. You can verify version with
+    ```bash
+    kind --version
+    ```
+1. A kind cluster manifest file [clusterconfig.yaml](./Kind/clusterconfig.yaml) is already provided, you can customize it. We are exposing port `80` on they host to be later use by the Knative Kourier ingress. To use a different version of kubernetes check the image digest to use from the kind [release page](https://github.com/kubernetes-sigs/kind/releases)
+    ```yaml
+    kind: Cluster
+    apiVersion: kind.sigs.k8s.io/v1alpha4
+    nodes:
+    - role: control-plane
+      image: kindest/node:v1.18.2@sha256:7b27a6d0f2517ff88ba444025beae41491b016bc6af573ba467b70c5e8e0d85f
+      extraPortMappings:
+      - containerPort: 31080 # expose port 31380 of the node to port 80 on the host, later to be use by kourier ingress
+        hostPort: 80
+    ```
+1. Create and start your cluster, we specify the config file above
+    ```
+    kind create cluster --name knative --config kind/clusterconfig.yaml
+    ```
+1. Verify the versions of the client `kubectl` and the cluster api-server, and that you can connect to your cluster.
+    ```bash
+    kubectl cluster-info --context kind-knative
+    ```
+
+</details>
+
+<details><summary>1.1.4 Kubernetes with Katacoda</summary>
 
 - For a short version of this tutorial try it out on my [Katacoda Scenario](https://www.katacoda.com/csantanapr/)
 
@@ -135,8 +163,21 @@ Last Update: _2020/07/16_
     kubectl wait deployment 3scale-kourier-control 3scale-kourier-gateway --for=condition=Available -n kourier-system 
     ```
 1. Set the environment variable `EXTERNAL_IP` to External IP Address of the Worker Node
+    If using minikube:
     ```bash
-    EXTERNAL_IP=$(minikube ip || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    EXTERNAL_IP=$(minikube ip)
+    echo EXTERNAL_IP=$EXTERNAL_IP
+    ```
+    If using kind:
+    ```bash
+    EXTERNAL_IP="127.0.0.1"
+    ```
+    If using IBM Kubernetes:
+    ```bash
+    EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+    ```
+    Verify the value
+    ```bash
     echo EXTERNAL_IP=$EXTERNAL_IP
     ```
 2. Set the environment variable `KNATIVE_DOMAIN` as the DNS domain using `nip.io`
@@ -152,7 +193,34 @@ Last Update: _2020/07/16_
     ```bash
     kubectl patch configmap -n knative-serving config-domain -p "{\"data\": {\"$KNATIVE_DOMAIN\": \"\"}}"
     ```
-1. Configure Kourier to listen for http port 80 on the External IP
+1. Configure Kourier to listen for http port 80 on the node
+    <details><summary>If using Kind then use this</summary>
+
+    ```bash
+    cat <<EOF | kubectl apply -f -
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: kourier-ingress
+      namespace: kourier-system
+      labels:
+        networking.knative.dev/ingress-provider: kourier
+    spec:
+      type: NodePort
+      selector:
+        app: 3scale-kourier-gateway
+      ports:
+        - name: http2
+          nodePort: 31080
+          port: 80
+          targetPort: 8080
+    EOF
+    ```
+
+    </details>
+
+    <details><summary>If using not using Kind then use this</summary>
+
     ```bash
     cat <<EOF | kubectl apply -f -
     apiVersion: v1
@@ -168,12 +236,14 @@ Last Update: _2020/07/16_
       ports:
         - name: http2
           port: 80
-          protocol: TCP
           targetPort: 8080
       externalIPs:
         - $EXTERNAL_IP
     EOF
     ```
+
+    </details>
+
 1. Configure Knative to use Kourier
     ```bash
     kubectl patch configmap/config-network \
@@ -489,7 +559,6 @@ Last Update: _2020/07/16_
     ```bash
     kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/v0.14.1/release.yaml
     kubectl wait deployment tekton-pipelines-controller tekton-pipelines-webhook --for=condition=Available -n tekton-pipelines
-
     ```
 
 </details>
@@ -503,27 +572,35 @@ Last Update: _2020/07/16_
     kubectl apply -f https://github.com/tektoncd/dashboard/releases/download/v0.7.1/tekton-dashboard-release.yaml
     kubectl wait deployment tekton-dashboard --for=condition=Available -n tekton-pipelines
     ```
-1. To access the dashboard you can configure a service with `NodePort`
+1. We can access the Tekton Dashboard serving using the Kourier Ingress using the `KNATIVE_DOMAIN`
     ```bash
-    kubectl expose service tekton-dashboard --name tekton-dashboard-ingress --type=NodePort -n tekton-pipelines
+    cat <<EOF | kubectl apply -f -
+    apiVersion: networking.internal.knative.dev/v1alpha1
+    kind: Ingress
+    metadata:
+      name: tekton-dashboard
+      namespace: tekton-pipelines
+      annotations:
+        networking.knative.dev/ingress.class: kourier.ingress.networking.knative.dev
+    spec:
+      rules:
+      - hosts:
+        - dashboard.tekton-pipelines.$KNATIVE_DOMAIN
+        http:
+          paths:
+          - splits:
+            - appendHeaders: {}
+              serviceName: tekton-dashboard
+              serviceNamespace: tekton-pipelines
+              servicePort: 9097
+        visibility: ExternalIP
+      visibility: ExternalIP
+    EOF
     ```
 1. Set an environment variable `TEKTON_DASHBOARD_URL` with the url to access the Dashboard
     ```bash
-    TEKTON_DASHBOARD_NODEPORT=$(kubectl get svc tekton-dashboard-ingress -n tekton-pipelines -o jsonpath='{.spec.ports[0].nodePort}')
-    TEKTON_DASHBOARD_URL=http://$EXTERNAL_IP:$TEKTON_DASHBOARD_NODEPORT
+    TEKTON_DASHBOARD_URL=http://dashboard.tekton-pipelines.$KNATIVE_DOMAIN
     echo TEKTON_DASHBOARD_URL=$TEKTON_DASHBOARD_URL
-    ```
-
-</details>
-
-<details><summary>4.3 Verify Tekton Pipeline Install</summary>
-
-#### 4.3 Verify Tekton Pipeline Install
-
-- Verify that the pods are in `Running` state in the `tekton-pipelines` namespace. If you installed the Tekton Dashboard also check that the service exist and in our case configure as `NodePort`
-    ```bash
-    kubectl get pods -n tekton-pipelines
-    kubectl get svc tekton-dashboard-ingress -n tekton-pipelines
     ```
 
 </details>
@@ -1025,14 +1102,34 @@ Last Update: _2020/07/16_
 
 - If you are using the IBM Free Kubernetes cluster a public IP Address is alocated to your worker node and we will use this one for this part of the tutorial. It will depend on your cluster and how traffic is configured into your Kubernetes Cluster, you would need to configure an Application Load Balancer (ALB), Ingress, or in case of OpenShift a Route. If you are running the Kubernetes cluster on your local workstation using something like minikube, kind, docker-desktop, or k3s then I recommend a Cloud Native Tunnel solution like [inlets](https://docs.inlets.dev/#/) by the open source contributor [Alex Ellis](https://twitter.com/alexellisuk). 
 
-1. Expose the EventListener as `NodePort`
+1. Expose the EventListener with Kourier
     ```bash
-    kubectl expose service el-cicd --name el-cicd-ingress --type=NodePort
+    cat <<EOF | kubectl apply -f -
+    apiVersion: networking.internal.knative.dev/v1alpha1
+    kind: Ingress
+    metadata:
+      name: el-cicd
+      namespace: $CURRENT_NS
+      annotations:
+        networking.knative.dev/ingress.class: kourier.ingress.networking.knative.dev
+    spec:
+      rules:
+      - hosts:
+        -  el-cicd.$CURRENT_NS.$KNATIVE_DOMAIN
+        http:
+          paths:
+          - splits:
+            - appendHeaders: {}
+              serviceName: el-cicd
+              serviceNamespace: $CURRENT_NS
+              servicePort: 8080
+        visibility: ExternalIP
+      visibility: ExternalIP
+    EOF
     ```
-1. Get the url using the external IP of the worker node and the `NodePort` assign. Set an environment variable `GIT_WEBHOOK_URL`
+1. Get the url using using `CURRENT_NS` and `KNATIVE_DOMAIN`
     ```bash
-    GIT_WEBHOOK_NODEPORT=$(kubectl get svc el-cicd-ingress -o jsonpath='{.spec.ports[0].nodePort}')
-    GIT_WEBHOOK_URL=http://$EXTERNAL_IP:$GIT_WEBHOOK_NODEPORT
+    GIT_WEBHOOK_URL=http://el-cicd.$CURRENT_NS.$KNATIVE_DOMAIN
     echo GIT_WEBHOOK_URL=$GIT_WEBHOOK_URL
     ```
     **WARNING:** Take into account that this URL is insecure is using http and not https, this means you should not use this type of URL for real work environments, In that case you would need to expose the service for the eventlistener using a secure connection using **https** 
