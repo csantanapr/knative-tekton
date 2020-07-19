@@ -219,7 +219,7 @@ Last Update: _2020/07/18_
 
     </details>
 
-    <details><summary>If using not using Kind then use this</summary>
+    <details><summary>If not using Kind then use this</summary>
 
     ```bash
     cat <<EOF | kubectl apply -f -
