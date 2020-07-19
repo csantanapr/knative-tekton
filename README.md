@@ -61,7 +61,7 @@ Last Update: _2020/07/18_
 
 <details><summary>1.1.3 Kubernetes with Kind (Kubernetes In Docker)</summary>
 
-1. Install [minikube](https://kind.sigs.k8s.io/docs/user/quick-start/) Linux, MacOS, or Windows. This tutorial was tested with version `v0.8.1`. You can verify version with
+1. Install [kind](https://kind.sigs.k8s.io/docs/user/quick-start/) Linux, MacOS, or Windows. This tutorial was tested with version `v0.8.1`. You can verify version with
     ```bash
     kind --version
     ```
