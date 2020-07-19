@@ -65,10 +65,10 @@ Last Update: _2020/07/18_
     ```bash
     kind --version
     ```
-1. A kind cluster manifest file [clusterconfig.yaml](./Kind/clusterconfig.yaml) is already provided, you can customize it. We are exposing port `80` on they host to be later use by the Knative Kourier ingress. To use a different version of kubernetes check the image digest to use from the kind [release page](https://github.com/kubernetes-sigs/kind/releases)
+1. A kind cluster manifest file [clusterconfig.yaml](./kind/clusterconfig.yaml) is already provided, you can customize it. We are exposing port `80` on they host to be later use by the Knative Kourier ingress. To use a different version of kubernetes check the image digest to use from the kind [release page](https://github.com/kubernetes-sigs/kind/releases)
     ```yaml
     kind: Cluster
-    apiVersion: kind.sigs.k8s.io/v1alpha4
+    apiVersion: kind.x-k8s.io/v1alpha4
     nodes:
     - role: control-plane
       image: kindest/node:v1.18.2@sha256:7b27a6d0f2517ff88ba444025beae41491b016bc6af573ba467b70c5e8e0d85f
