@@ -155,14 +155,15 @@ Last Update: _2020/07/18_
 
 1. Install Knative Serving in namespace `knative-serving`
     ```bash
-    kubectl apply -f https://github.com/knative/serving/releases/download/v0.16.0/serving-crds.yaml
-    kubectl apply -f https://github.com/knative/serving/releases/download/v0.16.0/serving-core.yaml
+    kubectl apply -f https://github.com/knative/serving/releases/download/v0.17.1/serving-crds.yaml
+    kubectl apply -f https://github.com/knative/serving/releases/download/v0.17.1/serving-core.yaml
     kubectl wait deployment activator autoscaler controller webhook --for=condition=Available -n knative-serving 
     ```
 1. Install Knative Layer kourier in namespace `kourier-system`
     ```
-    kubectl apply -f https://github.com/knative/net-kourier/releases/download/v0.16.0/kourier.yaml
-    kubectl wait deployment 3scale-kourier-control 3scale-kourier-gateway --for=condition=Available -n kourier-system 
+    kubectl apply -f https://github.com/knative/net-kourier/releases/download/v0.17.0/kourier.yaml
+    kubectl wait deployment 3scale-kourier-gateway --for=condition=Available -n kourier-system
+    kubectl wait deployment 3scale-kourier-control --for=condition=Available -n knative-serving 
     ```
 1. Set the environment variable `EXTERNAL_IP` to External IP Address of the Worker Node
     If using minikube:
