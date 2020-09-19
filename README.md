@@ -5,7 +5,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 ![diagram](./images/knative-tekton.png)
 
-Last Update: _2020/08/27_
+Last Update: _2020/09/18_
 
 <details><summary>1. Setup Environment</summary>
 
@@ -39,7 +39,7 @@ Last Update: _2020/08/27_
 
 <details><summary>1.1.2 Kubernetes with Minikube</summary>
 
-1. Install [minikube](https://minikube.sigs.k8s.io) Linux, MacOS, or Windows. This tutorial was tested with version `v1.12.0`. You print current and latest version number
+1. Install [minikube](https://minikube.sigs.k8s.io) Linux, MacOS, or Windows. This tutorial was tested with version `v1.13.0`. You print current and latest version number
     ```
     minikube update-check
     ```
@@ -48,7 +48,7 @@ Last Update: _2020/08/27_
     minikube delete
     minikube config set cpus 2
     minikube config set memory 2048
-    minikube config set kubernetes-version v1.18.5
+    minikube config set kubernetes-version v1.19.2
     ```
 1. Start your minikube cluster
     ```
@@ -155,15 +155,15 @@ Last Update: _2020/08/27_
 
 1. Install Knative Serving in namespace `knative-serving`
     ```bash
-    kubectl apply -f https://github.com/knative/serving/releases/download/v0.17.1/serving-crds.yaml
-    kubectl apply -f https://github.com/knative/serving/releases/download/v0.17.1/serving-core.yaml
-    kubectl wait deployment activator autoscaler controller webhook --for=condition=Available -n knative-serving 
+    kubectl apply -f https://github.com/knative/serving/releases/download/v0.17.2/serving-crds.yaml
+    kubectl apply -f https://github.com/knative/serving/releases/download/v0.17.2/serving-core.yaml
+    kubectl wait deployment activator autoscaler controller webhook --for=condition=Available -n knative-serving
     ```
 1. Install Knative Layer kourier in namespace `kourier-system`
     ```
-    kubectl apply -f https://github.com/knative/net-kourier/releases/download/v0.17.0/kourier.yaml
+    kubectl apply -f https://github.com/knative/net-kourier/releases/download/v0.17.1/kourier.yaml
     kubectl wait deployment 3scale-kourier-gateway --for=condition=Available -n kourier-system
-    kubectl wait deployment 3scale-kourier-control --for=condition=Available -n knative-serving 
+    kubectl wait deployment 3scale-kourier-control --for=condition=Available -n knative-serving
     ```
 1. Set the environment variable `EXTERNAL_IP` to External IP Address of the Worker Node
     If using minikube:
@@ -327,11 +327,11 @@ Last Update: _2020/08/27_
 
 <details><summary>3.2 Updating the Knative service</summary>
 
-#### 3.2 Updating the Knative service 
+#### 3.2 Updating the Knative service
 
 1. Update the service hello with a new environment variable `TARGET`
     ```bash
-    kn service update hello --env TARGET="World from v1" 
+    kn service update hello --env TARGET="World from v1" --revision-name"hello-v1"
     ```
 1. Now invoke the service
     ```bash
@@ -348,37 +348,30 @@ Last Update: _2020/08/27_
 
 #### 3.3 Knative Service Traffic Splitting
 
-1. Update the service hello by updating the environment variable `TARGET`, tag the previous version `v1`, send 25% traffic to this new version and leaving 75% of the traffic to `v1`
+1. Update the service hello by updating the environment variable `TARGET`, send 25% traffic to this new revision `hello-v2` and leaving 75% of the traffic to `hello-v1`
     ```bash
     kn service update hello \
-     --env TARGET="Knative from v2" \
-     --tag $(kubectl get ksvc hello --template='{{.status.latestReadyRevisionName}}')=v1 \
-     --traffic v1=75,@latest=25
+      --env TARGET="Knative from v2" \
+      --revision-name="hello-v2" \
+      --traffic hello-v1=75,hello-v2=25
     ```
 1. Describe the service to see the traffic split details
     ```bash
-    kn service describe  hello
+    kn service describe hello
     ```
     Should print this
     ```
     Name:       hello
-    Namespace:  debug
     Age:        6m
     URL:        http://hello.$SUB_DOMAIN
 
-    Revisions:  
-      25%  @latest (hello-mshgs-3) [3] (26s)
+    Revisions:
+      25%  hello-v2 (current @latest) [3] (27s)
             Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
-      75%  hello-tgzmt-2 #v1 [2] (6m)
+      75%  hello-v1 [2] (4m)
             Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
-
-    Conditions:  
-      OK TYPE                   AGE REASON
-      ++ Ready                  21s 
-      ++ ConfigurationsReady    24s 
-      ++ RoutesReady            21s 
     ```
-1. Invoke the service usign a while loop you will see the message `Hello Knative from v2` 25% of the time
+1. Invoke the service usign a while loop you will see the message `Hello Knative from hello-v2` 25% of the time
     ```bash
     while true; do
     curl http://hello.$SUB_DOMAIN
@@ -392,13 +385,12 @@ Last Update: _2020/08/27_
     Hello World from v1!
     Hello World from v1!
     ```
-1. Update the service this time dark launch new version `v3` on a specific url, zero traffic will go to this version from the main url of the service
+1. Update the service this time dark launch new version `hello-v3` on a specific url, zero traffic will go to this version from the main url of the service
     ```bash
     kn service update hello \
-        --env TARGET="OSS NA 2020 from v3" \
-        --tag $(kubectl get ksvc hello --template='{{.status.latestReadyRevisionName}}')=v2 \
-        --tag @latest=v3 \
-        --traffic v1=75,v2=25,@latest=0
+      --env TARGET="OSS NA 2020 from v3" \
+      --revision-name="hello-v3" \
+      --traffic hello-v1=75,hello-v2=25,hello-v3=0
     ```
 1. Describe the service to see the traffic split details, `v3` doesn't get any traffic
     ```bash
@@ -406,15 +398,19 @@ Last Update: _2020/08/27_
     ```
     Should print this
     ```
-    Revisions:  
-        +  @latest (hello-wkyty-4) #v3 [4] (1m)
+    Revisions:
+      +  hello-v3 (current @latest) [4] (1m)
             Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
-    25%  hello-fbzqf-3 #v2 [3] (6m)
+    25%  hello-v2 [3] (6m)
             Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
-    75%  hello-kcspq-2 #v1 [2] (7m)
+    75%  hello-v1 [2] (7m)
             Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
     ```
-1. The latest version of the service is only available with an url prefix `v3-`, go ahead and invoke the latest directly.
+1. The revision `hello-v3` is deployed with 0% traffic, but is not accesible by hostname routing. Update the this revision with a tag to create a custom hostname to be able to access the revision for testing/debugging then go ahead and invoke the latest directly.
+    Tag the revision `hello-v3`
+    ```bash
+    kn service update hello --tag hello-v3=v3
+    ```
     ```bash
     curl http://v3-hello.$SUB_DOMAIN
     ```
@@ -432,15 +428,13 @@ Last Update: _2020/08/27_
     ```
     Should print this
     ```
-    Revisions:  
-    100%  @latest (hello-wkyty-4) #v3 [4] (4m)
+    Revisions:
+        +  hello-v3 (current @latest) #v3 [4] (8m)
             Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
-        +  hello-fbzqf-3 #v2 [3] (8m)
-            Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
-        +  hello-kcspq-2 #v1 [2] (9m)
+      100%  @latest (hello-v3) [4] (8m)
             Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
     ```
-1. If we invoke the service in a loop you will see that 100% of the traffic is directed to version `v3` of our application
+1. If we invoke the service in a loop you will see that 100% of the traffic is directed to revision `hello-v3` of our application
     ```bash
     while true; do
     curl http://hello.$SUB_DOMAIN
@@ -454,11 +448,15 @@ Last Update: _2020/08/27_
     Hello OSS NA 2020 from v3!
     Hello OSS NA 2020 from v3!
     ```
-1. By using tags the custom urls with tag prefix are still available, in case you want to access an old revision of the application
+1. By using tags the custom urls with tag prefix are still available, in case you want to access an old revision of the application.
+    Tag the old revisions to be able to access them directly.
     ```bash
-    curl http://v1-hello.$SUB_DOMAIN 
-    curl http://v2-hello.$SUB_DOMAIN 
-    curl http://v3-hello.$SUB_DOMAIN 
+    kn service update hello --tag hello-v1=v1 --tag hello-v2=v2
+    ```
+    ```bash
+    curl http://v1-hello.$SUB_DOMAIN
+    curl http://v2-hello.$SUB_DOMAIN
+    curl http://v3-hello.$SUB_DOMAIN
     ```
     It should print
     ```
@@ -534,13 +532,16 @@ Last Update: _2020/08/27_
     ```bash
     kn service delete hello
     kubectl apply -f knative/v1.yaml
+    kubectl wait ksvc hello --timeout=-1s --for=condition=Ready
     kubectl apply -f knative/v2.yaml
+    kubectl wait ksvc hello --timeout=-1s --for=condition=Ready
     kubectl apply -f knative/v3.yaml
+    kubectl wait ksvc hello --timeout=-1s --for=condition=Ready
     ```
     Try the service again
     ```bash
     while true; do
-    curl http://hello.$SUB_DOMAIN 
+    curl http://hello.$SUB_DOMAIN
     done
     ```
 1. Delete the Application and all it's revisions
@@ -670,7 +671,7 @@ Last Update: _2020/08/27_
         console.log(`App listening on ${port}`)
     });
     ```
-1. I provided a Tekton Task that can download source code from git, build and push the Image to a registry. 
+1. I provided a Tekton Task that can download source code from git, build and push the Image to a registry.
     <details><summary>Show me the Build Task YAML</summary>
 
     ```yaml
@@ -721,7 +722,7 @@ Last Update: _2020/08/27_
           script: |
             echo "Building Image $(params.image)"
             buildah --storage-driver=$(params.STORAGE_DRIVER) bud --format=$(params.FORMAT) --tls-verify=$(params.TLSVERIFY) -f $(params.DOCKERFILE) -t $(params.image) $(params.CONTEXT)
-            
+
             echo "Pushing Image $(params.image)"
             buildah  --storage-driver=$(params.STORAGE_DRIVER) push --tls-verify=$(params.TLSVERIFY) --digestfile ./image-digest $(params.image) docker://$(params.image)
           securityContext:
@@ -738,7 +739,7 @@ Last Update: _2020/08/27_
           emptyDir: {}
     ```
     </details>
-    
+
 1. Install the provided task _build_ like this.
     ```bash
     kubectl apply -f tekton/task-build.yaml
@@ -757,7 +758,7 @@ Last Update: _2020/08/27_
       -p repo-url=${GIT_REPO_URL} \
       -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
       -p CONTEXT=nodejs \
-      -s pipeline 
+      -s pipeline
     ```
 1. You can check out the container registry and see that the image was pushed to repository a minute ago, it should return status Code `200`
     ```bash
@@ -863,7 +864,7 @@ Last Update: _2020/08/27_
       -p repo-url=${GIT_REPO_URL} \
       -p dir=knative \
       -p yaml=service.yaml \
-      -s pipeline 
+      -s pipeline
     ```
 1. You can check out that the Knative Application was deploy
     ```bash
@@ -943,7 +944,7 @@ Last Update: _2020/08/27_
     tkn pipeline start build-deploy --showlog \
       -p image=${REGISTRY_SERVER}/${REGISTRY_NAMESPACE}/knative-tekton \
       -p repo-url=${GIT_REPO_URL} \
-      -s pipeline 
+      -s pipeline
     ```
 1. You can inpect the results and duration by describing the last **PipelineRun**
     ```bash
@@ -959,7 +960,7 @@ Last Update: _2020/08/27_
     ```
     It shoudl print
     ```
-    Welcome to OSS NA 2020 
+    Welcome to OSS NA 2020
     ```
 </details>
 
@@ -979,7 +980,7 @@ Last Update: _2020/08/27_
     ```bash
     kubectl apply -f https://github.com/tektoncd/triggers/releases/download/v0.6.1/release.yaml
     kubectl wait deployment tekton-triggers-controller tekton-triggers-webhook --for=condition=Available -n tekton-pipelines
-    ``` 
+    ```
 
 </details>
 
@@ -1103,7 +1104,7 @@ Last Update: _2020/08/27_
 
 #### 6.4 Get URL for Git WebHook
 
-- If you are using the IBM Free Kubernetes cluster a public IP Address is alocated to your worker node and we will use this one for this part of the tutorial. It will depend on your cluster and how traffic is configured into your Kubernetes Cluster, you would need to configure an Application Load Balancer (ALB), Ingress, or in case of OpenShift a Route. If you are running the Kubernetes cluster on your local workstation using something like minikube, kind, docker-desktop, or k3s then I recommend a Cloud Native Tunnel solution like [inlets](https://docs.inlets.dev/#/) by the open source contributor [Alex Ellis](https://twitter.com/alexellisuk). 
+- If you are using the IBM Free Kubernetes cluster a public IP Address is alocated to your worker node and we will use this one for this part of the tutorial. It will depend on your cluster and how traffic is configured into your Kubernetes Cluster, you would need to configure an Application Load Balancer (ALB), Ingress, or in case of OpenShift a Route. If you are running the Kubernetes cluster on your local workstation using something like minikube, kind, docker-desktop, or k3s then I recommend a Cloud Native Tunnel solution like [inlets](https://docs.inlets.dev/#/) by the open source contributor [Alex Ellis](https://twitter.com/alexellisuk).
 
 1. Expose the EventListener with Kourier
     ```bash
@@ -1135,7 +1136,7 @@ Last Update: _2020/08/27_
     GIT_WEBHOOK_URL=http://el-cicd.$CURRENT_NS.$KNATIVE_DOMAIN
     echo GIT_WEBHOOK_URL=$GIT_WEBHOOK_URL
     ```
-    **WARNING:** Take into account that this URL is insecure is using http and not https, this means you should not use this type of URL for real work environments, In that case you would need to expose the service for the eventlistener using a secure connection using **https** 
+    **WARNING:** Take into account that this URL is insecure is using http and not https, this means you should not use this type of URL for real work environments, In that case you would need to expose the service for the eventlistener using a secure connection using **https**
 1. Add the Git Web Hook url to your Git repository
     1. Open Settings in your Github repository
     1. Click on the side menu **Webhooks**
