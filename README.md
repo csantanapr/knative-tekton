@@ -371,7 +371,7 @@ Last Update: _2020/09/18_
       75%  hello-v1 [2] (4m)
             Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
     ```
-1. Invoke the service usign a while loop you will see the message `Hello Knative from hello-v2` 25% of the time
+1. Invoke the service usign a while loop you will see the message `Hello Knative from v2` 25% of the time
     ```bash
     while true; do
     curl http://hello.$SUB_DOMAIN
