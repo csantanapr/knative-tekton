@@ -331,7 +331,7 @@ Last Update: _2020/09/18_
 
 1. Update the service hello with a new environment variable `TARGET`
     ```bash
-    kn service update hello --env TARGET="World from v1" --revision-name"hello-v1"
+    kn service update hello --env TARGET="World from v1" --revision-name "hello-v1"
     ```
 1. Now invoke the service
     ```bash
