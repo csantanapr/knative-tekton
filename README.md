@@ -294,7 +294,7 @@ Last Update: _2020/10/12_
     ```
 1. Use curl to invoke the Application
     ```bash
-    curl http://hello.$SUB_DOMAIN
+    curl http://hello-$SUB_DOMAIN
     ```
     It should print
     ```
@@ -335,7 +335,7 @@ Last Update: _2020/10/12_
     ```
 1. Now invoke the service
     ```bash
-    curl http://hello.$SUB_DOMAIN
+    curl http://hello-$SUB_DOMAIN
     ```
     It should print
     ```
@@ -363,7 +363,7 @@ Last Update: _2020/10/12_
     ```
     Name:       hello
     Age:        6m
-    URL:        http://hello.$SUB_DOMAIN
+    URL:        http://hello-$SUB_DOMAIN
 
     Revisions:
       25%  hello-v2 (current @latest) [3] (27s)
@@ -374,7 +374,7 @@ Last Update: _2020/10/12_
 1. Invoke the service usign a while loop you will see the message `Hello Knative from v2` 25% of the time
     ```bash
     while true; do
-    curl http://hello.$SUB_DOMAIN
+    curl http://hello-$SUB_DOMAIN
     sleep 0.5
     done
     ```
@@ -412,7 +412,7 @@ Last Update: _2020/10/12_
     kn service update hello --tag hello-v3=v3
     ```
     ```bash
-    curl http://v3-hello.$SUB_DOMAIN
+    curl http://v3-hello-$SUB_DOMAIN
     ```
     It shoud print this
     ```
@@ -436,7 +436,7 @@ Last Update: _2020/10/12_
 1. If we invoke the service in a loop you will see that 100% of the traffic is directed to revision `hello-v3` of our application
     ```bash
     while true; do
-    curl http://hello.$SUB_DOMAIN
+    curl http://hello-$SUB_DOMAIN
     sleep 0.5
     done
     ```
@@ -453,9 +453,9 @@ Last Update: _2020/10/12_
     kn service update hello --tag hello-v1=v1 --tag hello-v2=v2
     ```
     ```bash
-    curl http://v1-hello.$SUB_DOMAIN
-    curl http://v2-hello.$SUB_DOMAIN
-    curl http://v3-hello.$SUB_DOMAIN
+    curl http://v1-hello-$SUB_DOMAIN
+    curl http://v2-hello-$SUB_DOMAIN
+    curl http://v3-hello-$SUB_DOMAIN
     ```
     It should print
     ```
@@ -540,7 +540,7 @@ Last Update: _2020/10/12_
     Try the service again
     ```bash
     while true; do
-    curl http://hello.$SUB_DOMAIN
+    curl http://hello-$SUB_DOMAIN
     done
     ```
 1. Delete the Application and all it's revisions
@@ -955,7 +955,7 @@ Last Update: _2020/10/12_
     ```
 1. Run the Application using the url
     ```bash
-    curl http://demo.$SUB_DOMAIN
+    curl http://demo-$SUB_DOMAIN
     ```
     It shoudl print
     ```
@@ -1163,7 +1163,7 @@ Last Update: _2020/10/12_
     ```
 1. Invoke your new built revision for the Knative Application
     ```bash
-    curl http://demo.$SUB_DOMAIN
+    curl http://demo-$SUB_DOMAIN
     ```
     It should print
     ```
