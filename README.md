@@ -560,7 +560,7 @@ Last Update: _2020/10/12_
 
 - Install Tekton Pipelines in namespace `tekton-pipelines`
     ```bash
-    kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/v0.14.1/release.yaml
+    kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/v0.17.0/release.yaml
     kubectl wait deployment tekton-pipelines-controller tekton-pipelines-webhook --for=condition=Available -n tekton-pipelines
     ```
 
@@ -572,7 +572,7 @@ Last Update: _2020/10/12_
 
 1. Install Tekton Dashboard in namespace `tekton-pipelines`
     ```bash
-    kubectl apply -f https://github.com/tektoncd/dashboard/releases/download/v0.7.1/tekton-dashboard-release.yaml
+    kubectl apply -f https://github.com/tektoncd/dashboard/releases/download/v0.10.0/tekton-dashboard-release.yaml
     kubectl wait deployment tekton-dashboard --for=condition=Available -n tekton-pipelines
     ```
 1. We can access the Tekton Dashboard serving using the Kourier Ingress using the `KNATIVE_DOMAIN`
@@ -977,7 +977,7 @@ Last Update: _2020/10/12_
 
 1. Install Tekton Triggers in namespace `tekton-pipelines`
     ```bash
-    kubectl apply -f https://github.com/tektoncd/triggers/releases/download/v0.6.1/release.yaml
+    kubectl apply -f https://github.com/tektoncd/triggers/releases/download/v0.8.0/release.yaml
     kubectl wait deployment tekton-triggers-controller tekton-triggers-webhook --for=condition=Available -n tekton-pipelines
     ```
 
