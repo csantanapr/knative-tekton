@@ -5,7 +5,7 @@ Slides: [Knative-Tekton-OSSNA.pdf](./slides/Knative-Tekton-OSSNA.pdf)
 
 ![diagram](./images/knative-tekton.png)
 
-Last Update: _2020/09/18_
+Last Update: _2020/10/12_
 
 <details><summary>1. Setup Environment</summary>
 
@@ -43,7 +43,7 @@ Last Update: _2020/09/18_
     ```
     minikube update-check
     ```
-1. Configure your cluster 2 CPUs, 2 GB Memory, and version of kubernetes `v1.18.5`. If you already have a minikube with different config, you need to delete it for new configuration to take effect or create a new profile.
+1. Configure your cluster 2 CPUs, 2 GB Memory, and version of kubernetes `v1.19.2`. If you already have a minikube with different config, you need to delete it for new configuration to take effect or create a new profile.
     ```
     minikube delete
     minikube config set cpus 2
@@ -155,15 +155,15 @@ Last Update: _2020/09/18_
 
 1. Install Knative Serving in namespace `knative-serving`
     ```bash
-    kubectl apply -f https://github.com/knative/serving/releases/download/v0.17.2/serving-crds.yaml
-    kubectl apply -f https://github.com/knative/serving/releases/download/v0.17.2/serving-core.yaml
-    kubectl wait deployment activator autoscaler controller webhook --for=condition=Available -n knative-serving
+    kubectl apply -f https://github.com/knative/serving/releases/download/v0.18.0/serving-crds.yaml
+    kubectl apply -f https://github.com/knative/serving/releases/download/v0.18.0/serving-core.yaml
+    kubectl wait deployment activator autoscaler controller webhook --for=condition=Available -n knative-serving --timeout=-1s
     ```
-1. Install Knative Layer kourier in namespace `kourier-system`
+1. Install Knative Layer kourier in namespaces `kourier-system` and `knative-serving`
     ```
-    kubectl apply -f https://github.com/knative/net-kourier/releases/download/v0.17.1/kourier.yaml
-    kubectl wait deployment 3scale-kourier-gateway --for=condition=Available -n kourier-system
-    kubectl wait deployment 3scale-kourier-control --for=condition=Available -n knative-serving
+    kubectl apply -f https://github.com/knative/net-kourier/releases/download/v0.18.0/kourier.yaml
+    kubectl wait deployment 3scale-kourier-gateway --for=condition=Available -n kourier-system --timeout=-1s
+    kubectl wait deployment 3scale-kourier-control --for=condition=Available -n knative-serving --timeout=-1s
     ```
 1. Set the environment variable `EXTERNAL_IP` to External IP Address of the Worker Node
     If using minikube:
@@ -422,17 +422,16 @@ Last Update: _2020/09/18_
     ```bash
     kn service update hello --traffic @latest=100
     ```
-1. Describe the service to see the traffic split details, `@latest` now gets 100% of the traffic
+1. List the revisions to see the traffic assigned, `hello-v3` now gets 100% of the traffic
     ```bash
-    kn service describe  hello
+    kn revision ls
     ```
     Should print this
     ```
-    Revisions:
-        +  hello-v3 (current @latest) #v3 [4] (8m)
-            Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
-      100%  @latest (hello-v3) [4] (8m)
-            Image:  gcr.io/knative-samples/helloworld-go (pinned to 5ea96b)
+    NAME            SERVICE   TRAFFIC   TAGS   GENERATION   AGE    CONDITIONS   READY   REASON
+    hello-v3        hello     100%      v3     4            9m9s   3 OK / 4     True
+    hello-v2        hello                      3            10m    3 OK / 4     True
+    hello-v1        hello                      2            11m    3 OK / 4     True
     ```
 1. If we invoke the service in a loop you will see that 100% of the traffic is directed to revision `hello-v3` of our application
     ```bash
