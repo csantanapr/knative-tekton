@@ -23,10 +23,10 @@ spec:
           name: build-deploy
         params:
           - name: revision
-            value: $(params.gitrevision)
+            value: $(tt.params.gitrevision)
           - name: repo-url
-            value: $(params.gitrepositoryurl)
+            value: $(tt.params.gitrepositoryurl)
           - name: image-tag
-            value: $(params.gittruncatedsha)
+            value: $(tt.params.gittruncatedsha)
           - name: image
-            value: $(params.image)
+            value: $(tt.params.image)

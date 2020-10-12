@@ -977,7 +977,7 @@ Last Update: _2020/10/12_
 
 1. Install Tekton Triggers in namespace `tekton-pipelines`
     ```bash
-    kubectl apply -f https://github.com/tektoncd/triggers/releases/download/v0.6.1/release.yaml
+    kubectl apply -f https://github.com/tektoncd/triggers/releases/download/v0.8.0/release.yaml
     kubectl wait deployment tekton-triggers-controller tekton-triggers-webhook --for=condition=Available -n tekton-pipelines
     ```
 
