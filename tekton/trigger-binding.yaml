@@ -9,4 +9,5 @@ spec:
     - name: gitrepositoryurl
       value: $(body.repository.url)
     - name: gittruncatedsha
-      value: $(body.extensions.truncated_sha)
+      value: $(body.head_commit.id)
+      #value: $(body.extensions.truncated_sha)

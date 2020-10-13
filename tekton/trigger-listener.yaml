@@ -7,12 +7,15 @@ spec:
   triggers:
     - name: cicd-trig
       bindings:
-        - ref: build-deploy
+        - name: build-deploy
       template:
         name: build-deploy
       interceptors:
         - cel:
-            filter: "header.match('X-GitHub-Event', 'push') && body.ref == 'refs/heads/master'"
-            overlays:
-              - key: extensions.truncated_sha
-                expression: "body.head_commit.id.truncate(7)"
+            filter: "body.ref == 'refs/heads/master'"
+        - github:
+            secretRef:
+              secretName: build-deploy
+              secretKey: secret
+            eventTypes:
+              - push
