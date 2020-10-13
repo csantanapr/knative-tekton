@@ -10,4 +10,4 @@ spec:
           imagePullPolicy: Always
           env:
             - name: TARGET
-              value: Thanks for attending the talk
+              value: Welcome to the Cloud-Native Summit
